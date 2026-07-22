@@ -4,7 +4,26 @@
     "details": [
       {
         "appID": "FDYR7V7AH4.com.shemeshapps.Route-Radar",
-        "paths": ["*"]
+        "components": [
+          {
+            "/": "/",
+            "?": {
+              "route": "?*"
+            }
+          },
+          {
+            "/": "/",
+            "?": {
+              "vehicle": "?*"
+            }
+          },
+          {
+            "/": "/",
+            "?": {
+              "stop": "?*"
+            }
+          }
+        ]
       }
     ]
   }
