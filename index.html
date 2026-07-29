@@ -141,11 +141,6 @@
   .hero-stats .s b{font-family:'Space Grotesk',sans-serif;font-size:26px;display:block;line-height:1.15;white-space:nowrap;margin-bottom:2px}
   .hero-stats .s span{color:var(--muted);font-size:13px}
   .stat-sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22);flex:0 0 auto}
-  /* Pre-launch beta note */
-  .beta{margin-top:16px;font-size:14px;color:var(--muted);line-height:1.6}
-  .beta a{color:var(--accent-cyan);font-weight:600;white-space:nowrap}
-  .beta a:hover{text-decoration:underline}
-  .beta-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bsl);vertical-align:middle;margin-right:8px;box-shadow:0 0 0 3px rgba(255,159,46,.2)}
 
   /* Phone mockup */
   .phone{position:relative;width:300px;aspect-ratio:300/620;margin:0 auto;border-radius:44px;padding:13px;
@@ -342,7 +337,6 @@
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
         <a class="btn btn-ghost" href="#features">See features</a>
       </div>
-      <p class="beta"><span class="beta-dot"></span>Now in beta — <a href="#" data-testflight>join early on TestFlight</a></p>
       <div class="hero-stats">
         <div class="s"><b class="accent-text">Live</b><span>Real-time positions</span></div>
         <span class="stat-sep"></span>
@@ -531,7 +525,6 @@
       <h2>Ride smarter starting today</h2>
       <p>Free for iPhone.</p>
       <a class="badge" href="#" data-appstore style="position:relative" aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
-      <p class="beta" style="margin-top:18px;position:relative"><span class="beta-dot"></span>Now in beta — <a href="#" data-testflight>try it on TestFlight</a></p>
     </div>
   </div>
 </section>
@@ -597,10 +590,6 @@
     document.getElementById('deep-link-description').textContent = `View ${displayName.toLowerCase()} in Route Radar for iPhone.`;
     document.getElementById('open-in-app').href = customSchemeUrl;
   }
-
-  // Pre-launch beta link. Remove the .beta lines in the markup once the app is live on the App Store.
-  const TESTFLIGHT_URL = "https://testflight.apple.com/join/7ksWKrN2";
-  document.querySelectorAll('[data-testflight]').forEach(a=>{ a.href = TESTFLIGHT_URL; });
 </script>
 </body>
 </html>
