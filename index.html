@@ -341,6 +341,10 @@
     .phone-inline{display:block;margin-bottom:26px}
   }
   @media(max-width:560px){
+    /* The sweep is sized in vh, so on a narrow portrait screen it spans the whole width
+       and the rotation reads as a moving object rather than ambient light. The static
+       rings stay — it's the motion that's distracting at this size, not the shape. */
+    .sweep{display:none}
     .features{grid-template-columns:1fr}
     .cta{padding:56px 22px;border-radius:22px}
     .deep-link-actions{display:grid}
@@ -412,7 +416,7 @@
     <div class="hero-copy reveal">
       <span class="eyebrow mono"><span class="pulse"></span>Live · Philadelphia</span>
       <h1>All of Philly transit, <span class="accent-text">moving in real time.</span></h1>
-      <p class="lead">Buses, trolleys, subways, regional rail and PATCO on one fast native map — with live arrivals, service alerts, saved stops and more.</p>
+      <p class="lead">Buses, trolleys, subways, regional rail and PATCO on one fast native map — with live arrivals, service alerts, saved stops, and more.</p>
       <div class="hero-cta">
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
         <a class="btn mono" href="#features">See more
