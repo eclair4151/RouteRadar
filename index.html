@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Route Radar — Live SEPTA Transit Tracking for iPhone</title>
-<meta name="description" content="Track SEPTA buses, trolleys, and regional rail live on a beautiful map. Real-time arrivals, pinned stops, trip planning, alerts, and Indego bike-share — all in one app." />
+<meta name="description" content="Track SEPTA buses, trolleys, and regional rail live on a beautiful map. Real-time arrivals, pinned stops, service alerts, SEPTA Key, and Indego bike-share — all in one app." />
 <meta name="theme-color" content="#05070e" />
 <link rel="canonical" href="https://routeradar.app/" />
 
@@ -205,6 +205,8 @@
 
   /* ============ SECTIONS ============ */
   section.block{padding:104px 0;position:relative}
+  /* Anchor jumps otherwise land with the heading tucked under the sticky header. */
+  section[id]{scroll-margin-top:78px}
   .sec-head{max-width:700px;margin-bottom:60px}
   .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
   /* Numbered kickers give the page a spine and help you scan it in one pass. */
@@ -250,7 +252,10 @@
   .shot-stack img[data-shot]{opacity:0;transform:scale(1.03);filter:blur(6px)}
   .shot-stack img[data-shot].is-active{opacity:1;transform:none;filter:none}
 
-  .panels{display:grid;gap:0}
+  /* A sticky item unpins the instant its containing block ends, so without runway past
+     the last panel the device slides away the moment you reach it. This buffer lets you
+     overscroll the final feature while the phone stays put. */
+  .panels{display:grid;gap:0;padding-bottom:26vh}
   .panel{display:grid;grid-template-columns:auto 1fr;gap:26px;min-height:78vh;align-content:center;padding:40px 0}
   /* Progress rail: a hairline per step that fills when the step is active. */
   .rail{position:relative;width:2px;border-radius:2px;background:var(--line);overflow:hidden}
@@ -266,22 +271,6 @@
   .plist{display:flex;flex-wrap:wrap;gap:8px}
   .plist span{font-size:10.5px;color:var(--muted);border:1px solid var(--line);background:var(--solid);padding:6px 11px;border-radius:5px}
   .phone-inline{display:none}
-
-  /* ============ SPLIT SECTION ============
-     Copy on one side, a list of labelled items on the other. Same tokens as the cards
-     above, so a secondary section reads as part of the set instead of a lone banner. */
-  .split{display:grid;grid-template-columns:1.02fr 1fr;gap:52px;align-items:center}
-  .split h2{font-size:clamp(28px,3.8vw,42px);margin-bottom:18px}
-  .split > div > p{color:var(--muted);font-size:16.5px;margin-bottom:24px;max-width:440px}
-  .item-list{display:grid;gap:11px}
-  .item{display:flex;gap:14px;align-items:flex-start;background:var(--solid);backdrop-filter:blur(6px);
-    border:1px solid var(--line);border-radius:13px;padding:17px 18px;transition:.3s var(--ease)}
-  .item:hover{border-color:var(--line-2);background:var(--solid-2)}
-  .item .iico{width:28px;height:28px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
-    background:rgba(58,220,239,.12);color:var(--cy);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset}
-  .item .iico svg{width:15px;height:15px}
-  .item b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
-  .item span{color:var(--muted);font-size:13.5px;line-height:1.5}
 
   /* ============ CTA ============ */
   .cta{text-align:center;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:26px;
@@ -335,8 +324,6 @@
     .hero-cta,.modes,.eyebrow{justify-content:center}
     .modes{justify-content:center}
     .features{grid-template-columns:1fr 1fr}
-    .split{grid-template-columns:1fr;gap:32px}
-    .split > div > p{max-width:none}
     .sec-head{margin-bottom:44px}
     section.block{padding:76px 0}
     .nav-links .tlink{display:none}
@@ -344,6 +331,7 @@
        keeps the device out of a pinned column that would fight a 2.17:1 screenshot. */
     .show-grid{grid-template-columns:1fr;gap:0}
     .show-sticky{display:none}
+    .panels{padding-bottom:0}   /* nothing is pinned here, so the runway is dead space */
     .panel{grid-template-columns:1fr;min-height:0;gap:22px;padding:0 0 56px}
     .panel .rail{display:none}
     .panel .pbody{opacity:1}
@@ -402,8 +390,6 @@
         Route Radar
       </a>
       <div class="nav-links">
-        <a class="tlink mono" href="#features">Capabilities</a>
-        <a class="tlink mono" href="#screens">Screens</a>
         <a class="tlink mono" href="/support">Support</a>
         <a class="badge sm" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
       </div>
@@ -419,16 +405,16 @@
     <div class="hero-copy reveal">
       <span class="eyebrow mono"><span class="pulse"></span>Live · Philadelphia</span>
       <h1>The whole SEPTA network, <span class="accent-text">moving in real time.</span></h1>
-      <p class="lead">Every bus, trolley, metro and regional rail train on one fast native map — with live arrivals, door-to-door navigation, service alerts and Indego bikes.</p>
+      <p class="lead">Every bus, trolley, subway and regional rail train on one fast native map — with live arrivals, service alerts, saved stops and Indego bikes.</p>
       <div class="hero-cta">
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
-        <a class="btn mono" href="#screens">See it work
+        <a class="btn mono" href="#features">See more
           <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
       <div class="modes">
         <span class="mlabel mono">Coverage</span>
-        <span class="mode mono"><i style="background:var(--mfl)"></i>Metro</span>
+        <span class="mode mono"><i style="background:var(--mfl)"></i>Subway</span>
         <span class="mode mono"><i style="background:var(--trolley)"></i>Trolley</span>
         <span class="mode mono"><i style="background:var(--bsl)"></i>Bus</span>
         <span class="mode mono"><i style="background:var(--rail)"></i>Regional Rail</span>
@@ -475,7 +461,7 @@
         <span class="cnr tl"></span><span class="cnr br"></span>
         <div class="ico" style="background:rgba(46,144,255,.14);color:var(--mfl)"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9M4 16h16M4 16l-1 3M20 16l1 3M8 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg></div>
         <h3>Live vehicle map</h3>
-        <p>Watch every active bus, trolley, metro and regional rail train move in real time on a smooth, Metal-rendered map.</p>
+        <p>Watch every active bus, trolley, subway and regional rail train move in real time on a smooth, Metal-rendered map.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
@@ -485,9 +471,9 @@
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
-        <div class="ico" style="background:rgba(160,99,224,.14);color:var(--m1)"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19V5m0 0l-2 2m2-2l2 2M18 5v14m0 0l-2-2m2 2l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 5h6a4 4 0 0 1 4 4v0" stroke="currentColor" stroke-width="2"/></svg></div>
-        <h3>Door-to-door navigation</h3>
-        <p>Directions across the whole network, powered by the same live data on the map — the times you see are the times you'll ride.</p>
+        <div class="ico" style="background:rgba(160,99,224,.14);color:var(--m1)"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="15" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M11.2 11.8l8-8M17 5l2.5 2.5M14.4 7.6l2.3 2.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>SEPTA Key built in</h3>
+        <p>Check your card balance, travel wallet, passes and recent trips without ever leaving the app.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
@@ -589,38 +575,6 @@
   </div>
 </section>
 
-<!-- ===== SEPTA KEY ===== -->
-<section class="block" id="septakey">
-  <div class="wrap split">
-    <div class="reveal">
-      <div class="kicker mono" data-i="03 /">SEPTA Key</div>
-      <h2>No more switching apps</h2>
-      <p>Sign in once and Route Radar keeps your Key details a tap away — so checking a balance doesn't mean switching apps at the turnstile.</p>
-      <a class="btn mono" href="#" data-appstore>Get the app
-        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-    </div>
-    <div class="item-list reveal">
-      <div class="item">
-        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><rect x="2.5" y="5" width="19" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M2.5 10h19" stroke="currentColor" stroke-width="2"/></svg></span>
-        <div><b>Card balance</b><span>See what's left before you tap in.</span></div>
-      </div>
-      <div class="item">
-        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1M3 7.5V17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M21 15v-4h-4a2 2 0 0 0 0 4h4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>Travel wallet &amp; passes</b><span>Weeklies, monthlies and stored value in one place.</span></div>
-      </div>
-      <div class="item">
-        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>Recent trips</b><span>A running history of where you've tapped.</span></div>
-      </div>
-      <div class="item">
-        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-        <div><b>Credentials stay in the Keychain</b><span>Stored on-device by iOS and used only to sign in to SEPTA.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ===== CTA ===== -->
 <section class="block">
   <div class="wrap">
@@ -641,8 +595,6 @@
         Route Radar
       </a>
       <div class="foot-links">
-        <a href="#features">Capabilities</a>
-        <a href="#screens">Screens</a>
         <a href="/support">Support</a>
         <a href="/privacy">Privacy Policy</a>
         <a href="#" data-appstore>Download</a>
