@@ -152,7 +152,9 @@
     border:1px solid rgba(58,220,239,.28);background:rgba(58,220,239,.07);padding:7px 14px;border-radius:6px;margin-bottom:26px}
   .pulse{width:6px;height:6px;border-radius:50%;background:var(--cy);box-shadow:0 0 0 0 rgba(58,220,239,.7);animation:pulse 2.4s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,220,239,.55)}70%{box-shadow:0 0 0 11px rgba(58,220,239,0)}100%{box-shadow:0 0 0 0 rgba(58,220,239,0)}}
-  .hero h1{font-size:clamp(38px,4.7vw,57px);margin-bottom:22px;max-width:15ch}
+  /* balance evens the lines out so the narrowest phones don't strand a single word
+     ("transit," / "time.") on its own line. Ignored where unsupported — no fallback needed. */
+  .hero h1{font-size:clamp(38px,4.7vw,57px);margin-bottom:22px;max-width:15ch;text-wrap:balance}
   .hero p.lead{font-size:clamp(16.5px,1.5vw,18.5px);color:var(--muted);max-width:460px;margin-bottom:34px}
   .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 
@@ -345,6 +347,11 @@
     .deep-link-actions .btn{width:100%}
     .deep-link-actions .badge{justify-self:center}
   }
+  @media(max-width:360px){
+    /* On the narrowest phones 38px can't fit "transit," on a line, so balance still
+       strands it. Only these widths need the smaller size — 375px up keeps the full 38px. */
+    .hero h1{font-size:34px}
+  }
 
   /* Motion is decoration here — never a requirement for reading the page. */
   @media(prefers-reduced-motion:reduce){
@@ -404,8 +411,8 @@
   <div class="wrap hero-grid">
     <div class="hero-copy reveal">
       <span class="eyebrow mono"><span class="pulse"></span>Live · Philadelphia</span>
-      <h1>The whole SEPTA network, <span class="accent-text">moving in real time.</span></h1>
-      <p class="lead">Every bus, trolley, subway and regional rail train on one fast native map — with live arrivals, service alerts, saved stops and Indego bikes.</p>
+      <h1>All of Philly transit, <span class="accent-text">moving in real time.</span></h1>
+      <p class="lead">Buses, trolleys, subways, regional rail and PATCO on one fast native map — with live arrivals, service alerts, saved stops and more.</p>
       <div class="hero-cta">
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
         <a class="btn mono" href="#features">See more
@@ -443,7 +450,7 @@
     <span class="slabel mono">Official open data</span>
     <span class="src"><i style="background:var(--mfl)"></i>SEPTA</span>
     <span class="src"><i style="background:var(--patco)"></i>PATCO</span>
-    <span class="src"><i style="background:var(--indego)"></i>Indego Bike Share</span>
+    <span class="src"><i style="background:var(--indego)"></i>Indego</span>
     <span class="slabel mono">Refreshed continuously</span>
   </div>
 </div>
@@ -454,14 +461,14 @@
     <div class="sec-head center reveal">
       <div class="kicker mono" data-i="01 /">Capabilities</div>
       <h2>Built for how you actually ride</h2>
-      <p>From the morning bus to the last train home — a live, accurate picture of the whole system.</p>
+      <p>From the morning bus to the last train home — Route Radar gives a live, accurate picture of the whole system.</p>
     </div>
     <div class="features">
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
         <div class="ico" style="background:rgba(46,144,255,.14);color:var(--mfl)"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9M4 16h16M4 16l-1 3M20 16l1 3M8 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg></div>
         <h3>Live vehicle map</h3>
-        <p>Watch every active bus, trolley, subway and regional rail train move in real time on a smooth, Metal-rendered map.</p>
+        <p>Watch active buses, trolley's, subway's and regional rail train's move in real time on a smooth, high-performance map.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
@@ -479,13 +486,13 @@
         <span class="cnr tl"></span><span class="cnr br"></span>
         <div class="ico" style="background:rgba(245,203,46,.14);color:var(--g1)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></div>
         <h3>Alerts &amp; detours</h3>
-        <p>Active detours drawn right on the map, and route alerts surfaced exactly where they matter — no digging.</p>
+        <p>Active detours drawn right on the map, and route alerts surfaced exactly where they matter.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
         <div class="ico" style="background:rgba(233,76,122,.14);color:var(--pink)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.7-7-11a7 7 0 1 1 14 0c0 5.3-7 11-7 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></div>
-        <h3>Pinned stops</h3>
-        <p>Save your everyday stops for instant arrivals, kept in sync across your devices through your own iCloud account.</p>
+        <h3>Saved stops and routes</h3>
+        <p>Save your everyday stops and routes for quick access, kept in sync across your devices.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
