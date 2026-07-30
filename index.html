@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Route Radar — Live SEPTA Transit Tracking for iPhone</title>
 <meta name="description" content="Track SEPTA buses, trolleys, and regional rail live on a beautiful map. Real-time arrivals, pinned stops, trip planning, alerts, and Indego bike-share — all in one app." />
-<meta name="theme-color" content="#0a0e1a" />
+<meta name="theme-color" content="#05070e" />
 <link rel="canonical" href="https://routeradar.app/" />
 
 <!-- Favicon / touch icon -->
@@ -34,18 +34,26 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
 
 <style>
   :root{
-    --bg:#080b15;
-    --bg-2:#0c1120;
-    --surface:rgba(255,255,255,.04);
-    --surface-2:rgba(255,255,255,.06);
-    --border:rgba(255,255,255,.08);
-    --text:#eaf0fb;
+    /* Surfaces — near-black with a blue bias, so the line colors stay the brightest thing on screen */
+    --bg:#05070e;
+    --bg-2:#080c16;
+    --panel:rgba(255,255,255,.035);
+    --panel-2:rgba(255,255,255,.06);
+    /* Content panels sit over a moving background, so anything carrying body copy needs
+       a near-opaque base — otherwise a route line drifts straight through a sentence. */
+    --solid:rgba(12,16,27,.86);
+    --solid-2:rgba(19,25,40,.9);
+    --line:rgba(255,255,255,.075);
+    --line-2:rgba(255,255,255,.14);
+    --text:#e9eefb;
     --muted:#8b95ad;
-    /* SEPTA line palette — the same hues the app + icon use, nudged brighter for a dark UI */
+    --dim:#5b6580;
+    /* SEPTA line palette — the same hues the app + icon use. These are DATA colors:
+       they belong to modes, icons and the route field, never to headline gradients. */
     --mfl:#2E90FF;       /* Market–Frankford blue */
     --bsl:#FF9F2E;       /* Broad Street orange */
     --pink:#E94C7A;      /* D-line pink */
@@ -55,12 +63,12 @@
     --patco:#FF3B47;     /* PATCO red */
     --rail:#7FBBD0;      /* regional rail slate */
     --indego:#A2D341;    /* Indego lime */
+    /* The single UI accent. One accent, used sparingly, is what keeps this from looking generic. */
+    --cy:#3ADCEF;
     --accent:var(--mfl);
-    --accent-2:var(--bsl);
-    --accent-cyan:#38BDF8;
-    --accent-amber:var(--bsl);
-    --radius:20px;
-    --maxw:1140px;
+    --radius:18px;
+    --maxw:1180px;
+    --ease:cubic-bezier(.22,.7,.24,1);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -72,235 +80,342 @@
     overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.brand{font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:-.02em;line-height:1.1}
+  h1,h2,h3,.brand{font-family:'Sora','Inter',sans-serif;letter-spacing:-.03em;line-height:1.06;font-weight:700}
   a{color:inherit;text-decoration:none}
+  img{max-width:100%}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-  .accent-text{
-    background:linear-gradient(110deg,#38BDF8,var(--mfl) 34%,var(--m1) 70%,var(--pink));
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
 
-  /* Ambient background — blue lead, a warm orange wash + a violet to break the monotony */
-  .bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
-    radial-gradient(1100px 700px at 78% -12%,rgba(46,144,255,.16),transparent 60%),
-    radial-gradient(820px 560px at 10% 4%,rgba(255,159,46,.10),transparent 55%),
-    radial-gradient(720px 620px at 96% 82%,rgba(160,99,224,.10),transparent 60%),
-    var(--bg);}
-  .grid-lines{position:absolute;inset:0;opacity:.35;
-    background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
-    background-size:46px 46px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);}
-  /* Faint radar rings echoing the app icon */
-  .radar{position:absolute;top:-170px;right:-150px;width:660px;height:660px;border-radius:50%;opacity:.45;
-    background:repeating-radial-gradient(circle at center,transparent 0 40px,rgba(255,255,255,.05) 40px 41px);
-    -webkit-mask:radial-gradient(circle at center,#000 0 46%,transparent 72%);mask:radial-gradient(circle at center,#000 0 46%,transparent 72%)}
-  .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:float 16s ease-in-out infinite}
-  .blob.b1{width:480px;height:480px;background:rgba(46,144,255,.46);top:-120px;right:-80px}
-  .blob.b2{width:420px;height:420px;background:rgba(255,159,46,.26);bottom:-160px;left:-100px;animation-delay:-6s}
-  @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(0,40px)}}
+  /* Technical microtype. The mono labels are what make the page read as an instrument
+     rather than another dark landing page — keep them small, spaced and uppercase. */
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+  .accent-text{background:linear-gradient(96deg,var(--cy),var(--mfl) 62%,#6AA8FF);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 
-  /* Nav */
-  header{position:sticky;top:0;z-index:50;transition:.3s}
-  header.scrolled{background:rgba(8,11,21,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-  nav{display:flex;align-items:center;justify-content:space-between;height:72px}
-  .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:19px}
-  .logo{width:38px;height:38px;border-radius:11px;flex:0 0 auto;object-fit:cover;display:block;
-    box-shadow:0 6px 22px rgba(46,144,255,.3),0 0 0 1px rgba(255,255,255,.06)}
-  .nav-links{display:flex;align-items:center;gap:28px}
-  .nav-links a.tlink{color:var(--muted);font-size:15px;font-weight:500;transition:.2s}
+  /* ============ AMBIENT FIELD ============
+     A canvas of faint route polylines with vehicles traveling along them. It says
+     "real time" without a word of copy, and it's the one thing here you can't
+     get from a template. Static single frame under prefers-reduced-motion. */
+  .bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden;
+    background:
+      radial-gradient(1200px 760px at 76% -14%,rgba(46,144,255,.15),transparent 62%),
+      radial-gradient(900px 620px at 6% 2%,rgba(58,220,239,.055),transparent 58%),
+      radial-gradient(760px 660px at 98% 88%,rgba(160,99,224,.075),transparent 62%),
+      var(--bg)}
+  #field{position:absolute;inset:0;width:100%;height:100%;display:block}
+  /* Damps the field so it stays atmosphere rather than competing with type. */
+  .veil{position:absolute;inset:0;background:rgba(5,7,14,.46)}
+  .grid-lines{position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask:radial-gradient(ellipse 78% 58% at 50% 0%,#000 26%,transparent 74%);
+            mask:radial-gradient(ellipse 78% 58% at 50% 0%,#000 26%,transparent 74%)}
+  /* Slow radar sweep, echoing the app icon. Very low alpha — it should register as light, not as a spinning wedge. */
+  .sweep{position:absolute;top:-30vh;right:-24vw;width:120vh;height:120vh;border-radius:50%;
+    background:conic-gradient(from 0deg,rgba(58,220,239,.14),transparent 22%,transparent 100%);
+    -webkit-mask:radial-gradient(circle at center,#000 0 62%,transparent 74%);
+            mask:radial-gradient(circle at center,#000 0 62%,transparent 74%);
+    animation:sweep 26s linear infinite;opacity:.55}
+  @keyframes sweep{to{transform:rotate(360deg)}}
+  .rings{position:absolute;top:-32vh;right:-26vw;width:120vh;height:120vh;border-radius:50%;opacity:.5;
+    background:repeating-radial-gradient(circle at center,transparent 0 62px,rgba(255,255,255,.045) 62px 63px);
+    -webkit-mask:radial-gradient(circle at center,#000 0 52%,transparent 72%);
+            mask:radial-gradient(circle at center,#000 0 52%,transparent 72%)}
+
+  /* ============ NAV ============ */
+  header{position:sticky;top:0;z-index:60;transition:background .35s,border-color .35s,backdrop-filter .35s;
+    border-bottom:1px solid transparent}
+  header.scrolled{background:rgba(5,7,14,.72);backdrop-filter:blur(16px) saturate(1.3);border-bottom-color:var(--line)}
+  nav{display:flex;align-items:center;justify-content:space-between;height:70px;gap:20px}
+  .brand{display:flex;align-items:center;gap:11px;font-size:17px;letter-spacing:-.02em}
+  .logo{width:34px;height:34px;border-radius:10px;flex:0 0 auto;object-fit:cover;display:block;
+    box-shadow:0 6px 22px rgba(46,144,255,.3),0 0 0 1px rgba(255,255,255,.08)}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-links a.tlink{color:var(--muted);font-size:12px;transition:color .2s;position:relative}
+  .nav-links a.tlink::after{content:"";position:absolute;left:0;right:100%;bottom:-6px;height:1px;background:var(--cy);transition:right .35s var(--ease)}
   .nav-links a.tlink:hover{color:var(--text)}
-  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;padding:11px 20px;border-radius:13px;
-    transition:.25s;cursor:pointer;border:1px solid transparent}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-cyan));color:#04121f;box-shadow:0 8px 26px rgba(34,211,238,.3)}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(34,211,238,.42)}
-  .btn-ghost{border-color:var(--border);background:var(--surface);color:var(--text)}
-  .btn-ghost:hover{background:var(--surface-2);border-color:rgba(255,255,255,.18)}
-  /* Official Apple App Store badge */
-  .badge{display:inline-flex;transition:.25s;border-radius:10px}
-  .badge img{height:54px;width:auto;display:block}
+  .nav-links a.tlink:hover::after{right:0}
+
+  /* Buttons + official Apple badge */
+  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:14px;padding:13px 22px;border-radius:12px;
+    transition:.28s var(--ease);cursor:pointer;border:1px solid var(--line-2);background:var(--panel);color:var(--text);position:relative;overflow:hidden}
+  .btn:hover{background:var(--panel-2);border-color:rgba(255,255,255,.24);transform:translateY(-1px)}
+  .btn svg{width:16px;height:16px}
+  .badge{display:inline-flex;transition:.28s var(--ease);border-radius:10px}
+  .badge img{height:52px;width:auto;display:block}
   .badge:hover{transform:translateY(-2px);filter:brightness(1.08)}
-  .badge.sm img{height:40px}
+  .badge.sm img{height:38px}
 
-  /* Hero */
-  .hero{padding:72px 0 40px;position:relative}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
-  .pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent-cyan);
-    background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);padding:7px 14px;border-radius:100px;margin-bottom:24px}
-  .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent-cyan);box-shadow:0 0 0 0 rgba(34,211,238,.6);animation:pulse 2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,211,238,.55)}70%{box-shadow:0 0 0 12px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
-  .hero h1{font-size:clamp(38px,6vw,62px);font-weight:700;margin-bottom:20px}
-  .hero p.lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:540px;margin-bottom:32px}
+  /* ============ HERO ============ */
+  .hero{padding:82px 0 56px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;color:var(--cy);
+    border:1px solid rgba(58,220,239,.28);background:rgba(58,220,239,.07);padding:7px 14px;border-radius:6px;margin-bottom:26px}
+  .pulse{width:6px;height:6px;border-radius:50%;background:var(--cy);box-shadow:0 0 0 0 rgba(58,220,239,.7);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,220,239,.55)}70%{box-shadow:0 0 0 11px rgba(58,220,239,0)}100%{box-shadow:0 0 0 0 rgba(58,220,239,0)}}
+  .hero h1{font-size:clamp(38px,4.7vw,57px);margin-bottom:22px;max-width:15ch}
+  .hero p.lead{font-size:clamp(16.5px,1.5vw,18.5px);color:var(--muted);max-width:460px;margin-bottom:34px}
   .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-  .appstore{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;padding:12px 22px;border-radius:14px;
-    font-weight:600;transition:.25s}
-  .appstore:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(255,255,255,.18)}
-  .appstore svg{width:26px;height:26px}
-  .appstore small{display:block;font-size:11px;font-weight:500;opacity:.7;line-height:1}
-  .appstore b{font-size:18px;font-family:'Space Grotesk',sans-serif}
-  .hero-stats{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;margin-top:40px}
-  .hero-stats .s{text-align:center}
-  .hero-stats .s b{font-family:'Space Grotesk',sans-serif;font-size:26px;display:block;line-height:1.15;white-space:nowrap;margin-bottom:2px}
-  .hero-stats .s span{color:var(--muted);font-size:13px}
-  .stat-sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22);flex:0 0 auto}
 
-  /* Phone mockup — the frame height is derived from the screenshot, never hardcoded,
-     so the bezel hugs the image exactly at any width. --shot-aspect is the raw
-     screenshot ratio (1284x2778); update it if the screenshots are re-exported. */
-  .phone{--shot-aspect:1284/2778;position:relative;width:min(300px,100%);margin:0 auto;border-radius:44px;padding:13px;
-    background:linear-gradient(160deg,#1c2438,#0a0e1a);border:1px solid rgba(255,255,255,.12);
-    box-shadow:0 40px 90px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);}
-  .phone .screen{width:100%;aspect-ratio:var(--shot-aspect);border-radius:32px;overflow:hidden;position:relative;background:#0a0e1a}
+  /* Mode legend — the fastest possible answer to "does it cover my ride?" */
+  .modes{display:flex;flex-wrap:wrap;gap:8px;margin-top:38px;padding-top:26px;border-top:1px solid var(--line)}
+  .modes .mlabel{font-size:10px;color:var(--dim);width:100%;margin-bottom:4px}
+  .mode{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;color:var(--text);
+    border:1px solid var(--line);background:var(--solid);padding:6px 11px;border-radius:5px}
+  .mode i{width:7px;height:7px;border-radius:2px;flex:0 0 auto}
+
+  /* ============ 3D PHONE ============
+     .stage supplies the perspective; JS writes --ry/--rx/--ty on .tilt as you scroll
+     (and as the pointer moves, on desktop). The transform never touches the layout box,
+     so the screenshot aspect ratio below is unaffected by any of it. */
+  .stage{perspective:1500px;perspective-origin:50% 42%;position:relative}
+  .tilt{transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg)) translate3d(0,var(--ty,0px),0);
+    transform-style:preserve-3d;will-change:transform}
+
+  /* The frame height is derived from the screenshot, never hardcoded, so the bezel hugs
+     the image exactly at any width. --shot-aspect is the raw screenshot ratio
+     (1284x2778); update it if the screenshots are re-exported. */
+  .phone{--shot-aspect:1284/2778;position:relative;width:min(304px,100%);margin:0 auto;border-radius:46px;padding:11px;
+    background:linear-gradient(150deg,#2b3446 0%,#151b28 34%,#0a0e18 68%,#1d2534 100%);
+    box-shadow:
+      0 2px 3px rgba(255,255,255,.14) inset,
+      0 -2px 4px rgba(0,0,0,.6) inset,
+      0 0 0 1px rgba(255,255,255,.09),
+      0 50px 100px -20px rgba(0,0,0,.85),
+      0 30px 70px -30px rgba(46,144,255,.35);
+    transform-style:preserve-3d}
+  .phone .screen{position:relative;width:100%;aspect-ratio:var(--shot-aspect);border-radius:36px;overflow:hidden;background:#0a0e1a;
+    box-shadow:0 0 0 1px rgba(0,0,0,.9) inset}
   .phone .screen img{display:block;width:100%;height:auto;aspect-ratio:var(--shot-aspect);object-fit:cover}
-  /* CSS placeholder screen — replace the <img> src to use a real screenshot */
-  .mock-screen{position:absolute;inset:0;background:
-    radial-gradient(400px 300px at 70% 20%,rgba(34,211,238,.2),transparent 60%),
-    linear-gradient(180deg,#0e1626,#0a0f1c);}
-  .mock-screen .mtop{position:absolute;top:54px;left:18px;right:18px;height:44px;border-radius:14px;background:var(--surface);
-    border:1px solid var(--border);display:flex;align-items:center;padding:0 14px;color:var(--muted);font-size:13px;gap:8px}
-  .mock-dot{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #0a0e1a;box-shadow:0 0 0 4px rgba(0,0,0,.25)}
-  .mock-route{position:absolute;height:5px;border-radius:4px;opacity:.85}
-  .mock-card{position:absolute;left:14px;right:14px;bottom:18px;height:160px;border-radius:22px;background:rgba(12,18,32,.82);
-    backdrop-filter:blur(8px);border:1px solid var(--border);padding:16px}
-  .mock-card .pillrow{display:flex;gap:8px;margin-bottom:14px}
-  .mock-pill{height:26px;border-radius:8px;padding:0 12px;display:grid;place-items:center;font-weight:700;font-size:13px;color:#04121f}
-  .mock-line{height:11px;border-radius:6px;background:var(--surface-2);margin-bottom:9px}
-  .floating-tag{position:absolute;display:flex;align-items:center;gap:9px;background:rgba(12,18,32,.9);backdrop-filter:blur(10px);
-    border:1px solid var(--border);border-radius:14px;padding:11px 15px;font-size:13px;font-weight:600;box-shadow:0 14px 30px rgba(0,0,0,.4)}
-  .ft-1{top:70px;left:-36px;animation:bob 5s ease-in-out infinite}
-  .ft-2{bottom:120px;right:-44px;animation:bob 5s ease-in-out infinite .8s}
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-  .ft-ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center}
+  /* Specular sheen. This is what makes the tilt read as glass instead of a skewed rectangle.
+     JS moves --sheen with the rotation. */
+  .phone .glare{position:absolute;inset:0;border-radius:36px;pointer-events:none;z-index:4;
+    background:linear-gradient(102deg,transparent 32%,rgba(255,255,255,.085) var(--sheen,50%),transparent 68%);
+    mix-blend-mode:screen;transition:background .1s linear}
+  /* Floor glow, sitting behind and below the device to give it somewhere to stand. */
+  .phone-glow{position:absolute;left:50%;bottom:-38px;width:70%;height:60px;transform:translateX(-50%) translateZ(-60px);
+    background:radial-gradient(ellipse at center,rgba(46,144,255,.4),transparent 68%);filter:blur(26px);pointer-events:none}
 
-  /* Trust bar */
-  .trust{padding:30px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:48px}
-  .trust-inner{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:14px}
-  .chip{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);
-    padding:9px 16px;border-radius:100px;font-weight:600;color:var(--text);font-size:14px}
-  .chip i{width:8px;height:8px;border-radius:50%}
+  /* Floating HUD readouts beside the hero device */
+  .hud{position:absolute;z-index:5;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;
+    background:rgba(9,13,23,.82);backdrop-filter:blur(12px);border:1px solid var(--line-2);
+    box-shadow:0 18px 40px rgba(0,0,0,.5);transform:translateZ(46px);animation:bob 6s ease-in-out infinite}
+  .hud b{display:block;font-size:12.5px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+  .hud span{display:block;font-size:9.5px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+  .hud .hico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto}
+  .hud .hico svg{width:14px;height:14px}
+  /* Both anchored to the device's left edge, reaching into the gutter between the two
+     hero columns. Anchoring one on the right overflowed the viewport, and offsetting far
+     enough left to clear the copy put them under the headline — the gutter is the only
+     place that is safe at every width. Hidden below 1160px, where the gutter closes. */
+  .hud-1{top:104px;left:-34px}
+  .hud-2{bottom:112px;left:-34px;animation-delay:-2.4s}
+  @keyframes bob{0%,100%{transform:translateZ(46px) translateY(0)}50%{transform:translateZ(46px) translateY(-9px)}}
 
-  /* Sections */
-  section.block{padding:90px 0}
-  .sec-head{text-align:center;max-width:680px;margin:0 auto 56px}
-  .sec-head .kicker{color:var(--accent-cyan);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
-  .sec-head h2{font-size:clamp(28px,4vw,42px);margin-bottom:16px}
-  .sec-head p{color:var(--muted);font-size:17px}
+  /* ============ DATA STRIP ============ */
+  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0;
+    background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
+  .strip-inner{display:flex;align-items:center;justify-content:center;gap:12px 22px;flex-wrap:wrap}
+  .strip .slabel{font-size:10px;color:var(--dim)}
+  .src{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:var(--text)}
+  .src i{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
 
-  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:.3s;position:relative;overflow:hidden}
-  .card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.16);background:var(--surface-2)}
-  .card .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:18px}
-  .card .ico svg{width:24px;height:24px}
-  .card h3{font-size:19px;margin-bottom:9px}
-  .card p{color:var(--muted);font-size:15px}
+  /* ============ SECTIONS ============ */
+  section.block{padding:104px 0;position:relative}
+  .sec-head{max-width:700px;margin-bottom:60px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  /* Numbered kickers give the page a spine and help you scan it in one pass. */
+  .kicker{display:flex;align-items:center;gap:12px;font-size:10.5px;color:var(--cy);margin-bottom:20px}
+  .sec-head.center .kicker{justify-content:center}
+  .kicker::before{content:attr(data-i);color:var(--dim)}
+  .kicker::after{content:"";width:44px;height:1px;background:linear-gradient(90deg,rgba(58,220,239,.7),transparent)}
+  .sec-head h2{font-size:clamp(30px,4.2vw,46px);margin-bottom:18px}
+  .sec-head p{color:var(--muted);font-size:16.5px}
 
-  /* Compact SEPTA Key strip — present but understated */
-  .keycard{display:flex;gap:24px;align-items:center;flex-wrap:wrap;
-    background:linear-gradient(135deg,rgba(46,144,255,.06),rgba(255,159,46,.045));
-    border:1px solid var(--border);border-radius:18px;padding:22px 26px}
+  /* Capability cards, with HUD corner brackets */
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{position:relative;background:linear-gradient(170deg,var(--solid-2),var(--solid));backdrop-filter:blur(6px);
+    border:1px solid var(--line);border-radius:var(--radius);padding:26px;transition:.35s var(--ease);overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:var(--radius);pointer-events:none;
+    background:linear-gradient(180deg,rgba(58,220,239,.5),transparent 60%);opacity:0;transition:opacity .35s;
+    -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+    -webkit-mask-composite:xor;mask-composite:exclude;padding:1px}
+  .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.17);
+    background:linear-gradient(170deg,rgba(27,35,54,.92),rgba(14,19,32,.88))}
+  .card:hover::before{opacity:1}
+  /* Corner ticks — instrument-panel detail, 1px, easy to miss on purpose */
+  .card .cnr{position:absolute;width:10px;height:10px;border-color:var(--line-2);opacity:0;transition:opacity .35s}
+  .card:hover .cnr{opacity:1}
+  .cnr.tl{top:9px;left:9px;border-top:1px solid;border-left:1px solid}
+  .cnr.br{bottom:9px;right:9px;border-bottom:1px solid;border-right:1px solid}
+  .card .ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.07) inset}
+  .card .ico svg{width:21px;height:21px}
+  .card h3{font-size:17px;margin-bottom:9px;letter-spacing:-.02em}
+  .card p{color:var(--muted);font-size:14.5px}
+
+  /* ============ SHOWCASE (sticky 3D phone) ============
+     Desktop: the device pins while the copy scrolls and the screen cross-fades.
+     Mobile: this collapses to plain stacked cards — see the 900px query. */
+  .show-grid{display:grid;grid-template-columns:minmax(0,.62fr) minmax(0,1fr);gap:56px;align-items:start}
+  .show-sticky{position:sticky;top:calc(50vh - 320px);justify-self:center}
+  .shot-stack{position:relative}
+  /* The first image stays in flow so it defines the screen's height in every engine;
+     the rest stack on top of it, sized from their own aspect-ratio (no percentage heights). */
+  .shot-stack img{transition:opacity .6s var(--ease),transform .8s var(--ease),filter .6s var(--ease)}
+  .shot-stack img:not(:first-child){position:absolute;top:0;left:0;width:100%;height:auto}
+  .shot-stack img[data-shot]{opacity:0;transform:scale(1.03);filter:blur(6px)}
+  .shot-stack img[data-shot].is-active{opacity:1;transform:none;filter:none}
+
+  .panels{display:grid;gap:0}
+  .panel{display:grid;grid-template-columns:auto 1fr;gap:26px;min-height:78vh;align-content:center;padding:40px 0}
+  /* Progress rail: a hairline per step that fills when the step is active. */
+  .rail{position:relative;width:2px;border-radius:2px;background:var(--line);overflow:hidden}
+  .rail::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--cy),var(--mfl));
+    transform:scaleY(0);transform-origin:top;transition:transform .7s var(--ease)}
+  .panel.is-active .rail::after{transform:scaleY(1)}
+  .panel .pnum{font-size:10.5px;color:var(--dim);margin-bottom:16px;transition:color .4s}
+  .panel.is-active .pnum{color:var(--cy)}
+  .panel h3{font-size:clamp(24px,3vw,34px);margin-bottom:16px}
+  .panel p{color:var(--muted);font-size:16px;margin-bottom:22px;max-width:460px}
+  .panel .pbody{opacity:.34;transition:opacity .6s var(--ease)}
+  .panel.is-active .pbody{opacity:1}
+  .plist{display:flex;flex-wrap:wrap;gap:8px}
+  .plist span{font-size:10.5px;color:var(--muted);border:1px solid var(--line);background:var(--solid);padding:6px 11px;border-radius:5px}
+  .phone-inline{display:none}
+
+  /* ============ SEPTA KEY ============ */
+  .keycard{display:flex;gap:26px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,rgba(46,144,255,.13),rgba(255,159,46,.07) 70%,transparent),var(--solid);
+    backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px}
   .keycard .kbody{flex:1 1 340px;min-width:240px}
-  .keycard .ktitle{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .keycard .ktitle{display:flex;align-items:center;gap:12px;margin-bottom:8px}
   .keycard .kico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;
     background:linear-gradient(135deg,var(--mfl),var(--bsl));color:#04121f}
-  .keycard .kico svg{width:18px;height:18px}
+  .keycard .kico svg{width:17px;height:17px}
   .keycard h3{font-size:17px}
   .keycard p{color:var(--muted);font-size:14.5px;margin:0}
-  .keychips{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 260px}
-  .keychip{font-size:12.5px;font-weight:600;color:var(--text);background:var(--surface-2);
-    border:1px solid var(--border);padding:7px 13px;border-radius:100px}
+  .keychips{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 250px}
+  .keychip{font-size:10.5px;color:var(--text);background:var(--solid-2);border:1px solid var(--line);padding:7px 12px;border-radius:5px}
 
-  /* Screenshots showcase */
-  .shots{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
-  .shot-label{text-align:center;margin-top:18px}
-  .shot-label b{display:block;font-family:'Space Grotesk',sans-serif;font-size:17px}
-  .shot-label span{color:var(--muted);font-size:14px}
+  /* ============ PRIVACY ============ */
+  .priv-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:52px;align-items:center}
+  .priv-list{display:grid;gap:11px}
+  .priv-item{display:flex;gap:14px;align-items:flex-start;background:var(--solid);backdrop-filter:blur(6px);
+    border:1px solid var(--line);border-radius:13px;padding:17px 18px;transition:.3s var(--ease)}
+  .priv-item:hover{border-color:var(--line-2);background:var(--solid-2)}
+  .priv-item .check{width:26px;height:26px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
+    background:rgba(58,220,239,.12);color:var(--cy)}
+  .priv-item .check svg{width:14px;height:14px}
+  .priv-item b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
+  .priv-item span{color:var(--muted);font-size:13.5px;line-height:1.5}
 
-  /* Privacy band */
-  .privacy-band{background:linear-gradient(135deg,rgba(34,211,238,.07),rgba(59,130,246,.07));
-    border:1px solid var(--border);border-radius:28px;padding:54px;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
-  .privacy-band h2{font-size:clamp(26px,3.6vw,38px);margin-bottom:16px}
-  .privacy-band p{color:var(--muted);font-size:16px;margin-bottom:14px}
-  .priv-list{display:grid;gap:14px}
-  .priv-item{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
-  .priv-item .check{width:30px;height:30px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center;
-    background:rgba(34,211,238,.14);color:var(--accent-cyan)}
-  .priv-item b{display:block;font-family:'Space Grotesk',sans-serif;font-size:15px;margin-bottom:2px}
-  .priv-item span{color:var(--muted);font-size:14px}
+  /* ============ CTA ============ */
+  .cta{text-align:center;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:26px;
+    padding:78px 30px;backdrop-filter:blur(6px);
+    background:linear-gradient(170deg,rgba(46,144,255,.14),transparent 62%),var(--solid)}
+  .cta::before{content:"";position:absolute;inset:0;
+    background:repeating-radial-gradient(circle at 50% -10%,transparent 0 74px,rgba(255,255,255,.035) 74px 75px);
+    -webkit-mask:radial-gradient(ellipse 70% 90% at 50% 0%,#000,transparent 72%);
+            mask:radial-gradient(ellipse 70% 90% at 50% 0%,#000,transparent 72%)}
+  .cta > *{position:relative}
+  .cta h2{font-size:clamp(30px,4.6vw,48px);margin-bottom:16px}
+  .cta p{color:var(--muted);font-size:17px;margin-bottom:32px}
+  .cta .badge{justify-content:center}
 
-  /* CTA */
-  .cta{text-align:center;background:linear-gradient(135deg,#0e1730,#0a0f1c);border:1px solid var(--border);
-    border-radius:30px;padding:70px 30px;position:relative;overflow:hidden}
-  .cta::before{content:"";position:absolute;width:500px;height:500px;border-radius:50%;
-    background:radial-gradient(circle,rgba(34,211,238,.18),transparent 65%);top:-200px;left:50%;transform:translateX(-50%)}
-  .cta h2{font-size:clamp(30px,4.5vw,46px);margin-bottom:18px;position:relative}
-  .cta p{color:var(--muted);font-size:18px;margin-bottom:34px;position:relative}
-
-  /* Footer */
-  footer{border-top:1px solid var(--border);padding:50px 0 40px;margin-top:90px}
+  /* ============ FOOTER ============ */
+  footer{border-top:1px solid var(--line);padding:52px 0 44px;margin-top:60px}
   .foot-grid{display:flex;justify-content:space-between;align-items:flex-start;gap:30px;flex-wrap:wrap}
-  .foot-links{display:flex;gap:28px;flex-wrap:wrap}
-  .foot-links a{color:var(--muted);font-size:15px;transition:.2s}
+  .foot-links{display:flex;gap:26px;flex-wrap:wrap}
+  .foot-links a{color:var(--muted);font-size:14px;transition:.2s}
   .foot-links a:hover{color:var(--text)}
-  .foot-bottom{margin-top:34px;padding-top:24px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot-bottom{margin-top:34px;padding-top:24px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   .disclaimer{max-width:560px}
 
-  /* Reveal */
-  .reveal{opacity:0;transform:translateY(24px);transition:.7s cubic-bezier(.2,.7,.2,1)}
+  /* ============ REVEAL ============ */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
   .reveal.in{opacity:1;transform:none}
 
-  /* Shared-link fallback */
+  /* ============ SHARED-LINK FALLBACK ============ */
   .deep-link-landing{min-height:100svh;padding:32px 24px;display:none;place-items:center;position:relative;z-index:1}
-  .deep-link-card{width:min(100%,520px);padding:clamp(30px,7vw,52px);text-align:center;background:rgba(12,18,32,.82);
-    backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:28px;box-shadow:0 28px 80px rgba(0,0,0,.4)}
+  .deep-link-card{width:min(100%,520px);padding:clamp(30px,7vw,52px);text-align:center;background:rgba(9,13,23,.82);
+    backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:26px;box-shadow:0 28px 80px rgba(0,0,0,.5)}
   .deep-link-intro{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:28px}
-  .deep-link-icon{width:72px;height:72px;border-radius:21px;box-shadow:0 12px 34px rgba(46,144,255,.35)}
-  .deep-link-card .pill{margin:0}
-  .deep-link-card h1{font-size:clamp(31px,7vw,44px);margin-bottom:16px}
+  .deep-link-icon{width:70px;height:70px;border-radius:20px;box-shadow:0 12px 34px rgba(46,144,255,.35)}
+  .deep-link-card .eyebrow{margin:0}
+  .deep-link-card h1{font-size:clamp(30px,7vw,42px);margin-bottom:16px}
   .deep-link-card p{color:var(--muted);font-size:16px;max-width:390px;margin:0 auto 30px}
   .deep-link-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-  .deep-link-actions .btn{justify-content:center;min-width:190px}
-  .deep-link-button-icon{width:22px;height:22px;border-radius:6px}
+  .deep-link-actions .btn{justify-content:center;min-width:190px;
+    background:linear-gradient(135deg,var(--mfl),var(--cy));color:#04121f;border-color:transparent;font-weight:600}
+  .deep-link-button-icon{width:20px;height:20px;border-radius:6px}
   body.deep-link-active > :not(.bg-fx):not(.deep-link-landing){display:none}
   body.deep-link-active .deep-link-landing[hidden]{display:grid}
 
+  /* ============ RESPONSIVE ============ */
+  @media(max-width:1160px){
+    .hud{display:none}
+  }
   @media(max-width:900px){
-    .hero-grid{grid-template-columns:1fr;text-align:center}
-    .hero p.lead{margin-left:auto;margin-right:auto}
-    .hero-cta,.hero-stats{justify-content:center}
-    .hero-visual{margin-top:30px}
+    .hero{padding:56px 0 40px}
+    .hero-grid{grid-template-columns:1fr;gap:44px;text-align:center}
+    /* h1 carries a max-width, so it needs auto margins to actually sit centered here */
+    .hero h1,.hero p.lead{margin-left:auto;margin-right:auto}
+    .hero-cta,.modes,.eyebrow{justify-content:center}
+    .modes{justify-content:center}
     .features{grid-template-columns:1fr 1fr}
-    .shots{grid-template-columns:1fr}
-    .privacy-band{grid-template-columns:1fr;padding:36px}
-    .floating-tag{display:none}
+    .priv-grid{grid-template-columns:1fr;gap:34px}
+    .sec-head{margin-bottom:44px}
+    section.block{padding:76px 0}
     .nav-links .tlink{display:none}
+    /* Sticky showcase collapses to stacked cards. Simpler to read on a phone, and it
+       keeps the device out of a pinned column that would fight a 2.17:1 screenshot. */
+    .show-grid{grid-template-columns:1fr;gap:0}
+    .show-sticky{display:none}
+    .panel{grid-template-columns:1fr;min-height:0;gap:22px;padding:0 0 56px}
+    .panel .rail{display:none}
+    .panel .pbody{opacity:1}
+    .panel p{max-width:none}
+    .phone-inline{display:block;margin-bottom:26px}
   }
   @media(max-width:560px){
     .features{grid-template-columns:1fr}
-    .hero-stats{gap:14px}
-    .stat-sep{display:none}
+    .cta{padding:56px 22px;border-radius:22px}
     .deep-link-actions{display:grid}
     .deep-link-actions .btn{width:100%}
     .deep-link-actions .badge{justify-self:center}
+  }
+
+  /* Motion is decoration here — never a requirement for reading the page. */
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+    .tilt{transform:none!important}
+    .shot-stack img[data-shot]{filter:none;transform:none}
   }
 </style>
 </head>
 <body>
 
 <div class="bg-fx">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="veil"></div>
   <div class="grid-lines"></div>
-  <div class="radar"></div>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
+  <div class="rings"></div>
+  <div class="sweep"></div>
 </div>
 
 <main class="deep-link-landing" id="deep-link-landing" hidden>
   <section class="deep-link-card" aria-labelledby="deep-link-title">
     <div class="deep-link-intro">
       <img class="deep-link-icon" src="assets/app-icon.png" alt="Route Radar app icon" />
-      <span class="pill"><span class="pulse"></span>Shared from Route Radar</span>
+      <span class="eyebrow mono"><span class="pulse"></span>Shared from Route Radar</span>
     </div>
     <h1 id="deep-link-title">Open in Route Radar</h1>
     <p id="deep-link-description">View this live transit information in Route Radar for iPhone.</p>
     <div class="deep-link-actions">
-      <a class="btn btn-primary" id="open-in-app" href="routeradar://open"><img class="deep-link-button-icon" src="assets/app-icon.png" alt="" />Open in Route Radar</a>
+      <a class="btn" id="open-in-app" href="routeradar://open"><img class="deep-link-button-icon" src="assets/app-icon.png" alt="" />Open in Route Radar</a>
       <a class="badge" id="download-app" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
     </div>
   </section>
@@ -315,9 +430,9 @@
         Route Radar
       </a>
       <div class="nav-links">
-        <a class="tlink" href="#features">Features</a>
-        <a class="tlink" href="#screens">Screens</a>
-        <a class="tlink" href="/support">Support</a>
+        <a class="tlink mono" href="#features">Capabilities</a>
+        <a class="tlink mono" href="#screens">Screens</a>
+        <a class="tlink mono" href="/support">Support</a>
         <a class="badge sm" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
       </div>
     </nav>
@@ -330,112 +445,192 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="hero-copy reveal">
-      <span class="pill"><span class="pulse"></span> Live Philadelphia transit, on one map</span>
-      <h1>Every bus, trolley &amp; train in Philly — <span class="accent-text">tracked in real time.</span></h1>
-      <p class="lead">Route Radar puts the entire SEPTA network on a fast, beautiful live map. Real-time vehicle positions, stop arrivals, navigation, service alerts, and Indego bikes — built natively for iPhone.</p>
+      <span class="eyebrow mono"><span class="pulse"></span>Live · Philadelphia</span>
+      <h1>The whole SEPTA network, <span class="accent-text">moving in real time.</span></h1>
+      <p class="lead">Every bus, trolley, metro and regional rail train on one fast native map — with live arrivals, door-to-door navigation, service alerts and Indego bikes.</p>
       <div class="hero-cta">
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
-        <a class="btn btn-ghost" href="#features">See features</a>
+        <a class="btn mono" href="#screens">See it work
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
       </div>
-      <div class="hero-stats">
-        <div class="s"><b class="accent-text">Live</b><span>Real-time positions</span></div>
-        <span class="stat-sep"></span>
-        <div class="s"><b class="accent-text">All modes</b><span>Bus · Trolley · Rail</span></div>
-        <span class="stat-sep"></span>
-        <div class="s"><b class="accent-text">Navigate</b><span>Real-time routing</span></div>
+      <div class="modes">
+        <span class="mlabel mono">Coverage</span>
+        <span class="mode mono"><i style="background:var(--mfl)"></i>Metro</span>
+        <span class="mode mono"><i style="background:var(--trolley)"></i>Trolley</span>
+        <span class="mode mono"><i style="background:var(--bsl)"></i>Bus</span>
+        <span class="mode mono"><i style="background:var(--rail)"></i>Regional Rail</span>
+        <span class="mode mono"><i style="background:var(--patco)"></i>PATCO</span>
+        <span class="mode mono"><i style="background:var(--indego)"></i>Indego</span>
       </div>
     </div>
 
-    <div class="hero-visual reveal">
-      <div class="phone">
-        <div class="screen">
-          <!-- Replace this <img> with a real screenshot: <img src="screenshots/hero.png" alt="Route Radar map"> -->
-          <img src="screenshots/hero.png" alt="Route Radar live map" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-          <div class="mock-screen" style="display:none">
-            <div class="mtop">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#8b95ad" stroke-width="2"/><path d="M16 16l4 4" stroke="#8b95ad" stroke-width="2" stroke-linecap="round"/></svg>
-              Search stops &amp; routes
-            </div>
-            <!-- mock routes -->
-            <div class="mock-route" style="top:200px;left:30px;width:150px;transform:rotate(28deg);background:#2E90FF"></div>
-            <div class="mock-route" style="top:300px;left:90px;width:180px;transform:rotate(-18deg);background:#34C76A"></div>
-            <div class="mock-route" style="top:250px;left:40px;width:120px;transform:rotate(70deg);background:#FF9F2E"></div>
-            <!-- mock vehicles -->
-            <div class="mock-dot" style="top:210px;left:120px;background:#2E90FF"></div>
-            <div class="mock-dot" style="top:280px;left:170px;background:#34C76A"></div>
-            <div class="mock-dot" style="top:330px;left:90px;background:#FF9F2E"></div>
-            <div class="mock-card">
-              <div class="pillrow">
-                <span class="mock-pill" style="background:#34C76A">47</span>
-                <span class="mock-pill" style="background:#2E90FF">L1</span>
-                <span class="mock-pill" style="background:#FF9F2E">BSL</span>
-              </div>
-              <div class="mock-line" style="width:80%"></div>
-              <div class="mock-line" style="width:60%"></div>
-              <div class="mock-line" style="width:70%"></div>
-            </div>
+    <div class="hero-visual stage reveal">
+      <div class="tilt" data-tilt="hero" data-pointer>
+        <div class="phone">
+          <div class="phone-glow"></div>
+          <div class="screen">
+            <img src="screenshots/hero.png" alt="Route Radar live map of Philadelphia" />
+            <div class="glare"></div>
           </div>
+        </div>
+        <div class="hud hud-1">
+          <span class="hico" style="background:rgba(58,220,239,.14);color:var(--cy)">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 8-8M12 20a8 8 0 0 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
+          </span>
+          <div><b>Live positions</b><span>Streaming</span></div>
+        </div>
+        <div class="hud hud-2">
+          <span class="hico" style="background:rgba(255,159,46,.14);color:var(--bsl)">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div><b>Real arrivals</b><span>Schedule + delays</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== TRUST ===== -->
-<div class="trust">
-  <div class="wrap trust-inner">
-    <span>Powered by official open data from</span>
-    <span class="chip"><i style="background:#2E90FF"></i> SEPTA</span>
-    <span class="chip"><i style="background:#FF3B47"></i> PATCO</span>
-    <span class="chip"><i style="background:#A2D341"></i> Indego Bike Share</span>
+<!-- ===== DATA STRIP ===== -->
+<div class="strip">
+  <div class="wrap strip-inner">
+    <span class="slabel mono">Official open data</span>
+    <span class="src"><i style="background:var(--mfl)"></i>SEPTA</span>
+    <span class="src"><i style="background:var(--patco)"></i>PATCO</span>
+    <span class="src"><i style="background:var(--indego)"></i>Indego Bike Share</span>
+    <span class="slabel mono">Refreshed continuously</span>
   </div>
 </div>
 
-<!-- ===== FEATURES ===== -->
+<!-- ===== CAPABILITIES ===== -->
 <section class="block" id="features">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="kicker">Everything in one place</div>
+    <div class="sec-head center reveal">
+      <div class="kicker mono" data-i="01 /">Capabilities</div>
       <h2>Built for how you actually ride</h2>
-      <p>From the morning bus to the last train home, Route Radar gives you a live, accurate picture of the whole system.</p>
+      <p>From the morning bus to the last train home — a live, accurate picture of the whole system.</p>
     </div>
     <div class="features">
       <div class="card reveal">
-        <div class="ico" style="background:rgba(46,144,255,.15);color:#2E90FF"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9M4 16h16M4 16l-1 3M20 16l1 3M8 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg></div>
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(46,144,255,.14);color:var(--mfl)"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9M4 16h16M4 16l-1 3M20 16l1 3M8 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg></div>
         <h3>Live vehicle map</h3>
-        <p>Watch every active bus, trolley, subway, and regional rail train move in real time on a smooth, Metal-rendered map.</p>
+        <p>Watch every active bus, trolley, metro and regional rail train move in real time on a smooth, Metal-rendered map.</p>
       </div>
       <div class="card reveal">
-        <div class="ico" style="background:rgba(255,159,46,.15);color:#FF9F2E"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(255,159,46,.14);color:var(--bsl)"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>Real-time arrivals</h3>
-        <p>Tap any stop for live, accurate ETAs that blend the schedule with real vehicle positions and delays.</p>
+        <p>Tap any stop for live ETAs that blend the published schedule with actual vehicle positions and delays.</p>
       </div>
       <div class="card reveal">
-        <div class="ico" style="background:rgba(233,76,122,.15);color:#E94C7A"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.7-7-11a7 7 0 1 1 14 0c0 5.3-7 11-7 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></div>
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(160,99,224,.14);color:var(--m1)"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19V5m0 0l-2 2m2-2l2 2M18 5v14m0 0l-2-2m2 2l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 5h6a4 4 0 0 1 4 4v0" stroke="currentColor" stroke-width="2"/></svg></div>
+        <h3>Door-to-door navigation</h3>
+        <p>Directions across the whole network, powered by the same live data on the map — the times you see are the times you'll ride.</p>
+      </div>
+      <div class="card reveal">
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(245,203,46,.14);color:var(--g1)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></div>
+        <h3>Alerts &amp; detours</h3>
+        <p>Active detours drawn right on the map, and route alerts surfaced exactly where they matter — no digging.</p>
+      </div>
+      <div class="card reveal">
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(233,76,122,.14);color:var(--pink)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-5.7-7-11a7 7 0 1 1 14 0c0 5.3-7 11-7 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></div>
         <h3>Pinned stops</h3>
-        <p>Save your everyday stops for instant arrivals, kept in sync across your devices with iCloud.</p>
+        <p>Save your everyday stops for instant arrivals, kept in sync across your devices through your own iCloud account.</p>
       </div>
       <div class="card reveal">
-        <div class="ico" style="background:rgba(160,99,224,.15);color:#A063E0"><svg viewBox="0 0 24 24" fill="none"><path d="M6 19V5m0 0l-2 2m2-2l2 2M18 5v14m0 0l-2-2m2 2l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 5h6a4 4 0 0 1 4 4v0" stroke="currentColor" stroke-width="2"/></svg></div>
-        <h3>World-class navigation</h3>
-        <p>Door-to-door directions across the whole network, powered by the same live data on the map — so the times you see are the times you'll ride.</p>
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(162,211,65,.14);color:var(--indego)"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="17" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="17" r="3" stroke="currentColor" stroke-width="2"/><path d="M6 17l4-8h5l3 8M9 9h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Indego bikes &amp; lanes</h3>
+        <p>Nearby Indego docks with live bike and dock availability, plus the city's bike-lane network mapped alongside transit.</p>
       </div>
-      <div class="card reveal">
-        <div class="ico" style="background:rgba(245,203,46,.15);color:#F5CB2E"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></div>
-        <h3>Service alerts &amp; detours</h3>
-        <p>See active detours drawn right on the map and route alerts surfaced exactly where they matter — no digging.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SHOWCASE =====
+     To add a feature: append a .panel here AND an <img data-shot> to .shot-stack in the
+     same order. The two are paired by index, so nothing else needs to change. -->
+<section class="block" id="screens">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker mono" data-i="02 /">A closer look</div>
+      <h2>Designed to feel instant</h2>
+      <p>Native SwiftUI, a hardware-accelerated map, and a layout that gets out of your way.</p>
+    </div>
+
+    <div class="show-grid">
+      <div class="show-sticky stage">
+        <div class="tilt" data-tilt="show">
+          <div class="phone">
+            <div class="phone-glow"></div>
+            <div class="screen">
+              <div class="shot-stack">
+                <img src="screenshots/map.png" alt="Live map screen showing the whole network" data-shot class="is-active" />
+                <img src="screenshots/stop.png" alt="Stop detail screen with live arrival times" data-shot loading="lazy" />
+                <img src="screenshots/vehicle.png" alt="Vehicle detail screen with a stop-by-stop timeline" data-shot loading="lazy" />
+              </div>
+              <div class="glare"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card reveal">
-        <div class="ico" style="background:rgba(52,199,106,.15);color:#34C76A"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="17" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="17" r="3" stroke="currentColor" stroke-width="2"/><path d="M6 17l4-8h5l3 8M9 9h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <h3>Indego bikes &amp; bike lanes</h3>
-        <p>Find nearby Indego docks with live bike and dock availability — plus the city's bike-lane network mapped right alongside transit.</p>
+
+      <div class="panels">
+        <article class="panel" data-panel>
+          <div class="rail"></div>
+          <div class="pbody">
+            <div class="pnum mono">01 — The network</div>
+            <figure class="phone-inline stage">
+              <div class="phone"><div class="screen"><img src="screenshots/map.png" alt="Live map screen showing the whole network" loading="lazy" /><div class="glare"></div></div></div>
+            </figure>
+            <h3>Every line on one canvas</h3>
+            <p>The full system at a glance, then filter down to exactly what you care about. Tap any vehicle, stop or route to dig in without ever leaving the map.</p>
+            <div class="plist">
+              <span class="mono">Filter by mode</span><span class="mono">Route overlays</span><span class="mono">Bike lanes</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" data-panel>
+          <div class="rail"></div>
+          <div class="pbody">
+            <div class="pnum mono">02 — Arrivals</div>
+            <figure class="phone-inline stage">
+              <div class="phone"><div class="screen"><img src="screenshots/stop.png" alt="Stop detail screen with live arrival times" loading="lazy" /><div class="glare"></div></div></div>
+            </figure>
+            <h3>Tap a stop, get the truth</h3>
+            <p>Live ETAs broken out by direction, built from real vehicle positions rather than the timetable alone — so you know whether to run.</p>
+            <div class="plist">
+              <span class="mono">By direction</span><span class="mono">Live delays</span><span class="mono">Pin for later</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" data-panel>
+          <div class="rail"></div>
+          <div class="pbody">
+            <div class="pnum mono">03 — Tracking</div>
+            <figure class="phone-inline stage">
+              <div class="phone"><div class="screen"><img src="screenshots/vehicle.png" alt="Vehicle detail screen with a stop-by-stop timeline" loading="lazy" /><div class="glare"></div></div></div>
+            </figure>
+            <h3>Follow your ride, stop by stop</h3>
+            <p>Pick a vehicle and watch its whole trip unfold — where it is now, which stops are behind it, and when it reaches yours.</p>
+            <div class="plist">
+              <span class="mono">Stop timeline</span><span class="mono">Live position</span><span class="mono">Route context</span>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== SEPTA KEY ===== -->
-<section style="padding:30px 0" id="septakey">
+<section style="padding:14px 0" id="septakey">
   <div class="wrap">
     <div class="keycard reveal">
       <div class="kbody">
@@ -443,72 +638,44 @@
           <span class="kico"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="15" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M11.2 11.8l8-8M17 5l2.5 2.5M14.4 7.6l2.3 2.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <h3>SEPTA Key, right in the app</h3>
         </div>
-        <p>Sign in to check your card balance, travel wallet, passes, and recent trips — without leaving Route Radar.</p>
+        <p>Sign in to check your card balance, travel wallet, passes and recent trips — without leaving Route Radar.</p>
       </div>
       <div class="keychips">
-        <span class="keychip">Card balance</span>
-        <span class="keychip">Wallet &amp; passes</span>
-        <span class="keychip">Trip history</span>
-        <span class="keychip">Quick access</span>
+        <span class="keychip mono">Card balance</span>
+        <span class="keychip mono">Wallet &amp; passes</span>
+        <span class="keychip mono">Trip history</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== SCREENSHOTS ===== -->
-<section class="block" id="screens">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="kicker">A closer look</div>
-      <h2>Designed to feel instant</h2>
-      <p>Native SwiftUI, a hardware-accelerated map, and a layout that gets out of your way.</p>
+<!-- ===== PRIVACY ===== -->
+<section class="block" id="privacy">
+  <div class="wrap priv-grid">
+    <div class="reveal">
+      <div class="kicker mono" data-i="03 /">Privacy</div>
+      <h2 style="font-size:clamp(28px,3.8vw,42px);margin-bottom:18px">Your commute isn't data to sell</h2>
+      <p style="color:var(--muted);font-size:16.5px;margin-bottom:22px">Route Radar is free and independent. It has no account, no ad SDKs and no usage tracking — because none of that is needed to show you where the bus is.</p>
+      <a class="btn mono" href="/privacy">Read the policy
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
-    <div class="shots">
-      <div class="reveal">
-        <div class="phone">
-          <div class="screen">
-            <img src="screenshots/map.png" alt="Live map screen" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <div class="mock-screen" style="display:none">
-              <div class="mtop">Live Map</div>
-              <div class="mock-route" style="top:160px;left:40px;width:170px;transform:rotate(20deg);background:#2E90FF"></div>
-              <div class="mock-route" style="top:260px;left:60px;width:150px;transform:rotate(-30deg);background:#34C76A"></div>
-              <div class="mock-dot" style="top:175px;left:140px;background:#2E90FF"></div>
-              <div class="mock-dot" style="top:250px;left:110px;background:#34C76A"></div>
-            </div>
-          </div>
-        </div>
-        <div class="shot-label"><b>The whole network</b><span>Filter by mode, route, or stop</span></div>
+    <div class="priv-list reveal">
+      <div class="priv-item">
+        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>No account, ever</b><span>Download it and go. No name, email or phone number.</span></div>
       </div>
-      <div class="reveal">
-        <div class="phone">
-          <div class="screen">
-            <img src="screenshots/stop.png" alt="Stop arrivals screen" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <div class="mock-screen" style="display:none">
-              <div class="mtop">Front St &amp; Berks St</div>
-              <div class="mock-card" style="top:120px;bottom:auto;height:auto">
-                <div class="pillrow"><span class="mock-pill" style="background:#2E90FF">47</span><div style="align-self:center;color:#34C76A;font-weight:700">3 min</div></div>
-                <div class="mock-line" style="width:75%"></div>
-                <div class="pillrow" style="margin-top:14px"><span class="mock-pill" style="background:#FF9F2E">L1</span><div style="align-self:center;color:#8b95ad;font-weight:700">12 min</div></div>
-                <div class="mock-line" style="width:55%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="shot-label"><b>Tap a stop</b><span>Live ETAs by direction</span></div>
+      <div class="priv-item">
+        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>No analytics, no ad trackers</b><span>No advertising identifiers, no third-party tracking SDKs, no profiles.</span></div>
       </div>
-      <div class="reveal">
-        <div class="phone">
-          <div class="screen">
-            <img src="screenshots/vehicle.png" alt="Vehicle detail screen" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <div class="mock-screen" style="display:none">
-              <div class="mtop">Route 47 · Northbound</div>
-              <div class="mock-route" style="top:150px;left:140px;width:240px;transform:rotate(90deg);background:#2E90FF;opacity:1"></div>
-              <div class="mock-dot" style="top:200px;left:135px;background:#fff;width:18px;height:18px"></div>
-              <div class="mock-card"><div class="mock-line" style="width:60%"></div><div class="mock-line" style="width:80%"></div><div class="mock-line" style="width:45%"></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="shot-label"><b>Follow a vehicle</b><span>Stop-by-stop timeline</span></div>
+      <div class="priv-item">
+        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>Location stays on your device</b><span>Used to center the map and find nearby stops. No background tracking, and the app works fully without it.</span></div>
+      </div>
+      <div class="priv-item">
+        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>Your pins, your iCloud</b><span>Saved stops sync through your own private Apple account, not through us.</span></div>
       </div>
     </div>
   </div>
@@ -520,7 +687,7 @@
     <div class="cta reveal">
       <h2>Ride smarter starting today</h2>
       <p>Free for iPhone.</p>
-      <a class="badge" href="#" data-appstore style="position:relative" aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
+      <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
     </div>
   </div>
 </section>
@@ -534,7 +701,7 @@
         Route Radar
       </a>
       <div class="foot-links">
-        <a href="#features">Features</a>
+        <a href="#features">Capabilities</a>
         <a href="#screens">Screens</a>
         <a href="/support">Support</a>
         <a href="/privacy">Privacy Policy</a>
@@ -549,13 +716,15 @@
 </footer>
 
 <script>
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // Year
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Sticky nav style
   const hdr = document.getElementById('hdr');
-  const onScroll = () => hdr.classList.toggle('scrolled', window.scrollY > 12);
-  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+  const onScrollHdr = () => hdr.classList.toggle('scrolled', window.scrollY > 12);
+  onScrollHdr(); window.addEventListener('scroll', onScrollHdr, {passive:true});
 
   // Scroll reveal
   const io = new IntersectionObserver((entries)=>{
@@ -567,6 +736,218 @@
   const APP_STORE_URL = "https://apps.apple.com/us/app/route-radar-philly-transit/id6760282388";
   document.querySelectorAll('[data-appstore]').forEach(a=>{ a.href = APP_STORE_URL; });
 
+  /* ===== Showcase: pair each .panel with the screenshot at the same index =====
+     The panel nearest the middle of the viewport wins, so the screen never flickers
+     between two candidates the way a plain isIntersecting toggle would. */
+  const panels = [...document.querySelectorAll('[data-panel]')];
+  const shots  = [...document.querySelectorAll('.shot-stack [data-shot]')];
+  let activeShot = -1;
+
+  function setActive(i){
+    if (i === activeShot) return;
+    activeShot = i;
+    shots.forEach((s,n)=>s.classList.toggle('is-active', n === i));
+    panels.forEach((p,n)=>p.classList.toggle('is-active', n === i));
+  }
+
+  function pickPanel(){
+    if (!panels.length) return;
+    const mid = window.innerHeight / 2;
+    let best = 0, bestDist = Infinity;
+    panels.forEach((p,i)=>{
+      const r = p.getBoundingClientRect();
+      const d = Math.abs((r.top + r.height/2) - mid);
+      if (d < bestDist){ bestDist = d; best = i; }
+    });
+    setActive(best);
+  }
+
+  /* ===== Scroll/pointer driven 3D =====
+     Every transform is written from one rAF pass so scroll and pointer never fight
+     over the same style. Angles stay small on purpose — a device that swings too far
+     reads as a gimmick, and the screenshot stops being legible. */
+  const tilts = [...document.querySelectorAll('[data-tilt]')];
+  const pointer = {x:0, y:0, active:false};
+  let queued = false;
+
+  function writeTilts(){
+    queued = false;
+    const vh = window.innerHeight;
+    const narrow = window.innerWidth <= 900;
+
+    tilts.forEach(el=>{
+      const r = el.getBoundingClientRect();
+      // -1 (below the fold) .. 0 (centered) .. 1 (above it)
+      const p = Math.max(-1, Math.min(1, ((vh/2) - (r.top + r.height/2)) / (vh * 0.9)));
+      let ry, rx, ty;
+
+      if (el.dataset.tilt === 'show'){
+        // Pinned device: yaw across the section so it turns as you advance the copy.
+        const host = el.closest('.show-grid');
+        const hr = host ? host.getBoundingClientRect() : r;
+        const prog = Math.max(0, Math.min(1, -hr.top / Math.max(1, hr.height - vh)));
+        ry = (prog - .5) * -19;
+        rx = 3.2 - prog * 6.4;
+        ty = 0;
+      } else {
+        ry = -p * 9;
+        rx = p * 5.5;
+        ty = -p * 14;
+      }
+
+      if (pointer.active && el.hasAttribute('data-pointer') && !narrow){
+        ry += pointer.x * 7;
+        rx += -pointer.y * 4.5;
+      }
+
+      const scale = narrow ? .55 : 1;   // gentler on phones, where scroll is jumpier
+      ry *= scale; rx *= scale; ty *= scale;
+
+      el.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+      el.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+      el.style.setProperty('--ty', ty.toFixed(1) + 'px');
+      // Sheen tracks the yaw, so the highlight sweeps as the glass turns.
+      const glare = el.querySelector('.glare');
+      if (glare) glare.style.setProperty('--sheen', (50 - ry * 3.4).toFixed(1) + '%');
+    });
+  }
+
+  function requestFrame(){
+    if (!queued){ queued = true; requestAnimationFrame(writeTilts); }
+  }
+
+  function onScroll(){ pickPanel(); if (!REDUCED) requestFrame(); }
+
+  pickPanel();
+  if (!REDUCED){
+    writeTilts();
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', ()=>{ pickPanel(); requestFrame(); });
+    window.addEventListener('pointermove', (e)=>{
+      if (e.pointerType !== 'mouse') return;
+      pointer.x = (e.clientX / window.innerWidth - .5) * 2;
+      pointer.y = (e.clientY / window.innerHeight - .5) * 2;
+      pointer.active = true;
+      requestFrame();
+    }, {passive:true});
+  } else {
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', pickPanel);
+  }
+
+  /* ===== Ambient route field =====
+     Faint polylines with vehicles running along them. Cheap by construction: a fixed
+     handful of curves, ~34 movers, DPR capped at 2, and it stops entirely when the tab
+     is hidden. Draws one static frame if the visitor prefers reduced motion. */
+  (function field(){
+    const cvs = document.getElementById('field');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d', {alpha:true});
+    if (!ctx) return;
+
+    const HUES = ['#2E90FF','#FF9F2E','#34C76A','#A063E0','#E94C7A','#7FBBD0','#F5CB2E'];
+    let w = 0, h = 0, routes = [], movers = [], raf = 0, running = false;
+
+    // Deterministic pseudo-random so the field looks composed, not accidental.
+    let seed = 8;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+
+    function build(){
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = cvs.clientWidth; h = cvs.clientHeight;
+      cvs.width = Math.round(w * dpr); cvs.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      seed = 8; routes = []; movers = [];
+      const n = w < 700 ? 5 : 7;
+      for (let i = 0; i < n; i++){
+        // Long diagonal sweeps across the canvas, each bent by two control points.
+        const y0 = h * (-.15 + rnd() * 1.3);
+        const y1 = h * (-.15 + rnd() * 1.3);
+        routes.push({
+          hue: HUES[i % HUES.length],
+          p0: {x: -w * .12, y: y0},
+          c1: {x: w * (.2 + rnd() * .2), y: h * (rnd() * 1.1 - .05)},
+          c2: {x: w * (.6 + rnd() * .2), y: h * (rnd() * 1.1 - .05)},
+          p1: {x: w * 1.12, y: y1}
+        });
+      }
+      const per = w < 700 ? 4 : 5;
+      routes.forEach((r, i) => {
+        for (let k = 0; k < per; k++){
+          movers.push({r: i, t: rnd(), v: .00013 + rnd() * .00028});
+        }
+      });
+    }
+
+    const at = (r, t) => {
+      const u = 1 - t, a = u*u*u, b = 3*u*u*t, c = 3*u*t*t, d = t*t*t;
+      return {
+        x: a*r.p0.x + b*r.c1.x + c*r.c2.x + d*r.p1.x,
+        y: a*r.p0.y + b*r.c1.y + c*r.c2.y + d*r.p1.y
+      };
+    };
+
+    function draw(dt){
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.lineWidth = 1.4;
+      ctx.globalAlpha = 1;
+      routes.forEach(r=>{
+        ctx.strokeStyle = r.hue;
+        ctx.globalAlpha = .1;
+        ctx.beginPath();
+        ctx.moveTo(r.p0.x, r.p0.y);
+        ctx.bezierCurveTo(r.c1.x, r.c1.y, r.c2.x, r.c2.y, r.p1.x, r.p1.y);
+        ctx.stroke();
+      });
+
+      movers.forEach(m=>{
+        m.t += m.v * dt;
+        if (m.t > 1) m.t -= 1;
+        const r = routes[m.r], pt = at(r, m.t);
+        // A short comet tail reads as motion even in a still screenshot.
+        const tail = at(r, Math.max(0, m.t - .035));
+        const g = ctx.createLinearGradient(tail.x, tail.y, pt.x, pt.y);
+        g.addColorStop(0, 'rgba(255,255,255,0)');
+        g.addColorStop(1, r.hue);
+        ctx.strokeStyle = g; ctx.globalAlpha = .4; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(tail.x, tail.y); ctx.lineTo(pt.x, pt.y); ctx.stroke();
+
+        ctx.globalAlpha = .8; ctx.fillStyle = r.hue;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.9, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = .12;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 6.5, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    let last = 0;
+    function loop(ts){
+      if (!running) return;
+      const dt = last ? Math.min(48, ts - last) : 16;
+      last = ts;
+      draw(dt);
+      raf = requestAnimationFrame(loop);
+    }
+    function start(){ if (running) return; running = true; last = 0; raf = requestAnimationFrame(loop); }
+    function stop(){ running = false; cancelAnimationFrame(raf); }
+
+    build();
+    if (REDUCED){ draw(0); }
+    else {
+      start();
+      document.addEventListener('visibilitychange', ()=> document.hidden ? stop() : start());
+    }
+
+    let rt;
+    window.addEventListener('resize', ()=>{
+      clearTimeout(rt);
+      rt = setTimeout(()=>{ build(); if (REDUCED) draw(0); }, 180);
+    });
+  })();
+
+  /* ===== Shared-link fallback ===== */
   const sharedLinkTypes = [
     { key: 'route', label: 'route' },
     { key: 'vehicle', label: 'vehicle' },
