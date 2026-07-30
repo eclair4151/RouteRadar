@@ -92,9 +92,9 @@
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 
   /* ============ AMBIENT FIELD ============
-     A canvas of faint route polylines with vehicles traveling along them. It says
-     "real time" without a word of copy, and it's the one thing here you can't
-     get from a template. Static single frame under prefers-reduced-motion. */
+     A canvas of snaking transit lines cutting their own paths across an invisible city
+     grid. It says "real time" without a word of copy, and it's the one thing here you
+     can't get from a template. Static single frame under prefers-reduced-motion. */
   .bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden;
     background:
       radial-gradient(1200px 760px at 76% -14%,rgba(46,144,255,.15),transparent 62%),
@@ -103,7 +103,7 @@
       var(--bg)}
   #field{position:absolute;inset:0;width:100%;height:100%;display:block}
   /* Damps the field so it stays atmosphere rather than competing with type. */
-  .veil{position:absolute;inset:0;background:rgba(5,7,14,.46)}
+  .veil{position:absolute;inset:0;background:rgba(5,7,14,.4)}
   .grid-lines{position:absolute;inset:0;opacity:.5;
     background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
     background-size:64px 64px;
@@ -195,22 +195,6 @@
   .phone-glow{position:absolute;left:50%;bottom:-38px;width:70%;height:60px;transform:translateX(-50%) translateZ(-60px);
     background:radial-gradient(ellipse at center,rgba(46,144,255,.4),transparent 68%);filter:blur(26px);pointer-events:none}
 
-  /* Floating HUD readouts beside the hero device */
-  .hud{position:absolute;z-index:5;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;
-    background:rgba(9,13,23,.82);backdrop-filter:blur(12px);border:1px solid var(--line-2);
-    box-shadow:0 18px 40px rgba(0,0,0,.5);transform:translateZ(46px);animation:bob 6s ease-in-out infinite}
-  .hud b{display:block;font-size:12.5px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
-  .hud span{display:block;font-size:9.5px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
-  .hud .hico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto}
-  .hud .hico svg{width:14px;height:14px}
-  /* Both anchored to the device's left edge, reaching into the gutter between the two
-     hero columns. Anchoring one on the right overflowed the viewport, and offsetting far
-     enough left to clear the copy put them under the headline — the gutter is the only
-     place that is safe at every width. Hidden below 1160px, where the gutter closes. */
-  .hud-1{top:104px;left:-34px}
-  .hud-2{bottom:112px;left:-34px;animation-delay:-2.4s}
-  @keyframes bob{0%,100%{transform:translateZ(46px) translateY(0)}50%{transform:translateZ(46px) translateY(-9px)}}
-
   /* ============ DATA STRIP ============ */
   .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0;
     background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
@@ -283,31 +267,21 @@
   .plist span{font-size:10.5px;color:var(--muted);border:1px solid var(--line);background:var(--solid);padding:6px 11px;border-radius:5px}
   .phone-inline{display:none}
 
-  /* ============ SEPTA KEY ============ */
-  .keycard{display:flex;gap:26px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden;
-    background:linear-gradient(120deg,rgba(46,144,255,.13),rgba(255,159,46,.07) 70%,transparent),var(--solid);
-    backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px}
-  .keycard .kbody{flex:1 1 340px;min-width:240px}
-  .keycard .ktitle{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-  .keycard .kico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;
-    background:linear-gradient(135deg,var(--mfl),var(--bsl));color:#04121f}
-  .keycard .kico svg{width:17px;height:17px}
-  .keycard h3{font-size:17px}
-  .keycard p{color:var(--muted);font-size:14.5px;margin:0}
-  .keychips{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 250px}
-  .keychip{font-size:10.5px;color:var(--text);background:var(--solid-2);border:1px solid var(--line);padding:7px 12px;border-radius:5px}
-
-  /* ============ PRIVACY ============ */
-  .priv-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:52px;align-items:center}
-  .priv-list{display:grid;gap:11px}
-  .priv-item{display:flex;gap:14px;align-items:flex-start;background:var(--solid);backdrop-filter:blur(6px);
+  /* ============ SPLIT SECTION ============
+     Copy on one side, a list of labelled items on the other. Same tokens as the cards
+     above, so a secondary section reads as part of the set instead of a lone banner. */
+  .split{display:grid;grid-template-columns:1.02fr 1fr;gap:52px;align-items:center}
+  .split h2{font-size:clamp(28px,3.8vw,42px);margin-bottom:18px}
+  .split > div > p{color:var(--muted);font-size:16.5px;margin-bottom:24px;max-width:440px}
+  .item-list{display:grid;gap:11px}
+  .item{display:flex;gap:14px;align-items:flex-start;background:var(--solid);backdrop-filter:blur(6px);
     border:1px solid var(--line);border-radius:13px;padding:17px 18px;transition:.3s var(--ease)}
-  .priv-item:hover{border-color:var(--line-2);background:var(--solid-2)}
-  .priv-item .check{width:26px;height:26px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
-    background:rgba(58,220,239,.12);color:var(--cy)}
-  .priv-item .check svg{width:14px;height:14px}
-  .priv-item b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
-  .priv-item span{color:var(--muted);font-size:13.5px;line-height:1.5}
+  .item:hover{border-color:var(--line-2);background:var(--solid-2)}
+  .item .iico{width:28px;height:28px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
+    background:rgba(58,220,239,.12);color:var(--cy);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset}
+  .item .iico svg{width:15px;height:15px}
+  .item b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
+  .item span{color:var(--muted);font-size:13.5px;line-height:1.5}
 
   /* ============ CTA ============ */
   .cta{text-align:center;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:26px;
@@ -353,9 +327,6 @@
   body.deep-link-active .deep-link-landing[hidden]{display:grid}
 
   /* ============ RESPONSIVE ============ */
-  @media(max-width:1160px){
-    .hud{display:none}
-  }
   @media(max-width:900px){
     .hero{padding:56px 0 40px}
     .hero-grid{grid-template-columns:1fr;gap:44px;text-align:center}
@@ -364,7 +335,8 @@
     .hero-cta,.modes,.eyebrow{justify-content:center}
     .modes{justify-content:center}
     .features{grid-template-columns:1fr 1fr}
-    .priv-grid{grid-template-columns:1fr;gap:34px}
+    .split{grid-template-columns:1fr;gap:32px}
+    .split > div > p{max-width:none}
     .sec-head{margin-bottom:44px}
     section.block{padding:76px 0}
     .nav-links .tlink{display:none}
@@ -466,25 +438,13 @@
     </div>
 
     <div class="hero-visual stage reveal">
-      <div class="tilt" data-tilt="hero" data-pointer>
+      <div class="tilt" data-tilt="hero">
         <div class="phone">
           <div class="phone-glow"></div>
           <div class="screen">
-            <img src="screenshots/hero.png" alt="Route Radar live map of Philadelphia" />
+            <img src="screenshots/hero.webp" alt="Route Radar live map of Philadelphia" />
             <div class="glare"></div>
           </div>
-        </div>
-        <div class="hud hud-1">
-          <span class="hico" style="background:rgba(58,220,239,.14);color:var(--cy)">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 8-8M12 20a8 8 0 0 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
-          </span>
-          <div><b>Live positions</b><span>Streaming</span></div>
-        </div>
-        <div class="hud hud-2">
-          <span class="hico" style="background:rgba(255,159,46,.14);color:var(--bsl)">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-          <div><b>Real arrivals</b><span>Schedule + delays</span></div>
         </div>
       </div>
     </div>
@@ -569,9 +529,9 @@
             <div class="phone-glow"></div>
             <div class="screen">
               <div class="shot-stack">
-                <img src="screenshots/map.png" alt="Live map screen showing the whole network" data-shot class="is-active" />
-                <img src="screenshots/stop.png" alt="Stop detail screen with live arrival times" data-shot loading="lazy" />
-                <img src="screenshots/vehicle.png" alt="Vehicle detail screen with a stop-by-stop timeline" data-shot loading="lazy" />
+                <img src="screenshots/map.webp" alt="Live map screen showing the whole network" data-shot class="is-active" />
+                <img src="screenshots/stop.webp" alt="Stop detail screen with live arrival times" data-shot loading="lazy" />
+                <img src="screenshots/vehicle.webp" alt="Vehicle detail screen with a stop-by-stop timeline" data-shot loading="lazy" />
               </div>
               <div class="glare"></div>
             </div>
@@ -585,7 +545,7 @@
           <div class="pbody">
             <div class="pnum mono">01 — The network</div>
             <figure class="phone-inline stage">
-              <div class="phone"><div class="screen"><img src="screenshots/map.png" alt="Live map screen showing the whole network" loading="lazy" /><div class="glare"></div></div></div>
+              <div class="phone"><div class="screen"><img src="screenshots/map.webp" alt="Live map screen showing the whole network" loading="lazy" /><div class="glare"></div></div></div>
             </figure>
             <h3>Every line on one canvas</h3>
             <p>The full system at a glance, then filter down to exactly what you care about. Tap any vehicle, stop or route to dig in without ever leaving the map.</p>
@@ -600,7 +560,7 @@
           <div class="pbody">
             <div class="pnum mono">02 — Arrivals</div>
             <figure class="phone-inline stage">
-              <div class="phone"><div class="screen"><img src="screenshots/stop.png" alt="Stop detail screen with live arrival times" loading="lazy" /><div class="glare"></div></div></div>
+              <div class="phone"><div class="screen"><img src="screenshots/stop.webp" alt="Stop detail screen with live arrival times" loading="lazy" /><div class="glare"></div></div></div>
             </figure>
             <h3>Tap a stop, get the truth</h3>
             <p>Live ETAs broken out by direction, built from real vehicle positions rather than the timetable alone — so you know whether to run.</p>
@@ -615,7 +575,7 @@
           <div class="pbody">
             <div class="pnum mono">03 — Tracking</div>
             <figure class="phone-inline stage">
-              <div class="phone"><div class="screen"><img src="screenshots/vehicle.png" alt="Vehicle detail screen with a stop-by-stop timeline" loading="lazy" /><div class="glare"></div></div></div>
+              <div class="phone"><div class="screen"><img src="screenshots/vehicle.webp" alt="Vehicle detail screen with a stop-by-stop timeline" loading="lazy" /><div class="glare"></div></div></div>
             </figure>
             <h3>Follow your ride, stop by stop</h3>
             <p>Pick a vehicle and watch its whole trip unfold — where it is now, which stops are behind it, and when it reaches yours.</p>
@@ -630,52 +590,32 @@
 </section>
 
 <!-- ===== SEPTA KEY ===== -->
-<section style="padding:14px 0" id="septakey">
-  <div class="wrap">
-    <div class="keycard reveal">
-      <div class="kbody">
-        <div class="ktitle">
-          <span class="kico"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="15" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M11.2 11.8l8-8M17 5l2.5 2.5M14.4 7.6l2.3 2.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <h3>SEPTA Key, right in the app</h3>
-        </div>
-        <p>Sign in to check your card balance, travel wallet, passes and recent trips — without leaving Route Radar.</p>
-      </div>
-      <div class="keychips">
-        <span class="keychip mono">Card balance</span>
-        <span class="keychip mono">Wallet &amp; passes</span>
-        <span class="keychip mono">Trip history</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== PRIVACY ===== -->
-<section class="block" id="privacy">
-  <div class="wrap priv-grid">
+<section class="block" id="septakey">
+  <div class="wrap split">
     <div class="reveal">
-      <div class="kicker mono" data-i="03 /">Privacy</div>
-      <h2 style="font-size:clamp(28px,3.8vw,42px);margin-bottom:18px">Your commute isn't data to sell</h2>
-      <p style="color:var(--muted);font-size:16.5px;margin-bottom:22px">Route Radar is free and independent. It has no account, no ad SDKs and no usage tracking — because none of that is needed to show you where the bus is.</p>
-      <a class="btn mono" href="/privacy">Read the policy
+      <div class="kicker mono" data-i="03 /">SEPTA Key</div>
+      <h2>No more switching apps</h2>
+      <p>Sign in once and Route Radar keeps your Key details a tap away — so checking a balance doesn't mean switching apps at the turnstile.</p>
+      <a class="btn mono" href="#" data-appstore>Get the app
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
-    <div class="priv-list reveal">
-      <div class="priv-item">
-        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>No account, ever</b><span>Download it and go. No name, email or phone number.</span></div>
+    <div class="item-list reveal">
+      <div class="item">
+        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><rect x="2.5" y="5" width="19" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M2.5 10h19" stroke="currentColor" stroke-width="2"/></svg></span>
+        <div><b>Card balance</b><span>See what's left before you tap in.</span></div>
       </div>
-      <div class="priv-item">
-        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>No analytics, no ad trackers</b><span>No advertising identifiers, no third-party tracking SDKs, no profiles.</span></div>
+      <div class="item">
+        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1M3 7.5V17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M21 15v-4h-4a2 2 0 0 0 0 4h4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>Travel wallet &amp; passes</b><span>Weeklies, monthlies and stored value in one place.</span></div>
       </div>
-      <div class="priv-item">
-        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>Location stays on your device</b><span>Used to center the map and find nearby stops. No background tracking, and the app works fully without it.</span></div>
+      <div class="item">
+        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><b>Recent trips</b><span>A running history of where you've tapped.</span></div>
       </div>
-      <div class="priv-item">
-        <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <div><b>Your pins, your iCloud</b><span>Saved stops sync through your own private Apple account, not through us.</span></div>
+      <div class="item">
+        <span class="iico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <div><b>Credentials stay in the Keychain</b><span>Stored on-device by iOS and used only to sign in to SEPTA.</span></div>
       </div>
     </div>
   </div>
@@ -762,12 +702,11 @@
     setActive(best);
   }
 
-  /* ===== Scroll/pointer driven 3D =====
-     Every transform is written from one rAF pass so scroll and pointer never fight
-     over the same style. Angles stay small on purpose — a device that swings too far
-     reads as a gimmick, and the screenshot stops being legible. */
+  /* ===== Scroll driven 3D =====
+     Transforms are written from a single rAF pass. Scroll position is the only input —
+     the device deliberately does not follow the cursor. Angles stay small on purpose:
+     a device that swings too far reads as a gimmick and the screenshot stops being legible. */
   const tilts = [...document.querySelectorAll('[data-tilt]')];
-  const pointer = {x:0, y:0, active:false};
   let queued = false;
 
   function writeTilts(){
@@ -795,11 +734,6 @@
         ty = -p * 14;
       }
 
-      if (pointer.active && el.hasAttribute('data-pointer') && !narrow){
-        ry += pointer.x * 7;
-        rx += -pointer.y * 4.5;
-      }
-
       const scale = narrow ? .55 : 1;   // gentler on phones, where scroll is jumpier
       ry *= scale; rx *= scale; ty *= scale;
 
@@ -823,34 +757,73 @@
     writeTilts();
     window.addEventListener('scroll', onScroll, {passive:true});
     window.addEventListener('resize', ()=>{ pickPanel(); requestFrame(); });
-    window.addEventListener('pointermove', (e)=>{
-      if (e.pointerType !== 'mouse') return;
-      pointer.x = (e.clientX / window.innerWidth - .5) * 2;
-      pointer.y = (e.clientY / window.innerHeight - .5) * 2;
-      pointer.active = true;
-      requestFrame();
-    }, {passive:true});
   } else {
     window.addEventListener('scroll', onScroll, {passive:true});
     window.addEventListener('resize', pickPanel);
   }
 
   /* ===== Ambient route field =====
-     Faint polylines with vehicles running along them. Cheap by construction: a fixed
-     handful of curves, ~34 movers, DPR capped at 2, and it stops entirely when the tab
-     is hidden. Draws one static frame if the visitor prefers reduced motion. */
+     Snakes of light walking an invisible street grid. Each one enters from a random edge
+     and finds its own way across — there is no drawn route underneath, and no two runs
+     are alike. Turns are hard 90s softened by a small corner radius, the way a bus
+     actually takes a city block, and the head is the brightest point with the body
+     trailing off behind it.
+
+     Two rules keep them from looking dumb:
+       - each snake commits to a general heading, so it crosses the frame instead of
+         wandering in place;
+       - a spin counter kills a turn once it would continue a circle, so they never
+         loop back on themselves. U-turns stay possible, just rare.
+
+     Cheap by construction: ~13 snakes, ≤13 trail nodes each, DPR capped at 2, and it
+     stops entirely when the tab is hidden. Under prefers-reduced-motion it simulates
+     forward once and draws a single still frame. */
   (function field(){
     const cvs = document.getElementById('field');
     if (!cvs) return;
     const ctx = cvs.getContext('2d', {alpha:true});
     if (!ctx) return;
 
-    const HUES = ['#2E90FF','#FF9F2E','#34C76A','#A063E0','#E94C7A','#7FBBD0','#F5CB2E'];
-    let w = 0, h = 0, routes = [], movers = [], raf = 0, running = false;
+    // SEPTA line colors, weighted toward the ones you picture when you think of the system.
+    const HUES = ['#2E90FF','#2E90FF','#2E90FF','#FF9F2E','#FF9F2E','#FF9F2E',
+                  '#34C76A','#34C76A','#E94C7A','#A063E0','#F5CB2E','#FF3B47','#A2D341','#7FBBD0'];
+    const CELL = 30;      // block size of the implied grid — every turn lands on a lattice point
+    const CORNER = 7;     // corner radius: small, so turns read as street corners not curves
 
-    // Deterministic pseudo-random so the field looks composed, not accidental.
-    let seed = 8;
-    const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    let w = 0, h = 0, snakes = [], raf = 0, running = false, last = 0;
+
+    const rnd = Math.random;
+    const pick = a => a[(rnd() * a.length) | 0];
+    const snap = v => Math.round(v / CELL) * CELL;
+
+    function spawn(){
+      const edge = (rnd() * 4) | 0;
+      let x, y, dir;
+      if (edge === 0)      { x = -CELL;   y = rnd() * h; dir = {x: 1,  y: 0}; }
+      else if (edge === 1) { x = w + CELL; y = rnd() * h; dir = {x: -1, y: 0}; }
+      else if (edge === 2) { x = rnd() * w; y = -CELL;   dir = {x: 0,  y: 1}; }
+      else                 { x = rnd() * w; y = h + CELL; dir = {x: 0,  y: -1}; }
+
+      return {
+        hue: pick(HUES),
+        dir,
+        // Committed heading: inward on the entry axis, random on the other. This is what
+        // produces the up / left / left / up staircase instead of aimless drift.
+        bias: {
+          x: dir.x !== 0 ? dir.x : (rnd() < .5 ? -1 : 1),
+          y: dir.y !== 0 ? dir.y : (rnd() < .5 ? -1 : 1)
+        },
+        head: {x: snap(x), y: snap(y)},
+        nodes: [{x: snap(x), y: snap(y)}],
+        run: CELL * (2 + ((rnd() * 5) | 0)),   // cells before the next decision
+        gone: 0,
+        spin: 0,
+        speed: .034 + rnd() * .042,            // px per ms — slow enough to stay background
+        width: rnd() < .22 ? 2.3 : 1.6,
+        alpha: .46 + rnd() * .26,
+        maxLen: 210 + rnd() * 230              // fixed body length, so it reads as a snake
+      };
+    }
 
     function build(){
       const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -858,83 +831,158 @@
       cvs.width = Math.round(w * dpr); cvs.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      seed = 8; routes = []; movers = [];
-      const n = w < 700 ? 5 : 7;
+      const n = w < 700 ? 8 : 13;
+      snakes = [];
       for (let i = 0; i < n; i++){
-        // Long diagonal sweeps across the canvas, each bent by two control points.
-        const y0 = h * (-.15 + rnd() * 1.3);
-        const y1 = h * (-.15 + rnd() * 1.3);
-        routes.push({
-          hue: HUES[i % HUES.length],
-          p0: {x: -w * .12, y: y0},
-          c1: {x: w * (.2 + rnd() * .2), y: h * (rnd() * 1.1 - .05)},
-          c2: {x: w * (.6 + rnd() * .2), y: h * (rnd() * 1.1 - .05)},
-          p1: {x: w * 1.12, y: y1}
-        });
+        const s = spawn();
+        // Stagger the start so they aren't all entering at once on first paint.
+        advance(s, rnd() * 9000);
+        snakes.push(s);
       }
-      const per = w < 700 ? 4 : 5;
-      routes.forEach((r, i) => {
-        for (let k = 0; k < per; k++){
-          movers.push({r: i, t: rnd(), v: .00013 + rnd() * .00028});
+    }
+
+    function turn(s){
+      const d = s.dir;
+      const left  = {x:  d.y, y: -d.x};
+      const right = {x: -d.y, y:  d.x};
+      const back  = {x: -d.x, y: -d.y};
+
+      // Agreement with the committed heading, clamped so a "wrong" way stays possible.
+      const agree = nd => Math.max(.12, 1 + 1.7 * (nd.x * s.bias.x + nd.y * s.bias.y));
+      // Once two turns have gone the same way, stop rewarding that way — this is the
+      // anti-circling rule. Without it they spiral.
+      const spinOk = sign => (Math.sign(s.spin) === sign && Math.abs(s.spin) >= 2) ? .04 : 1;
+
+      const opts = [
+        {d: d,     w: 3.1  * agree(d)},
+        {d: left,  w: 1.15 * agree(left)  * spinOk(-1)},
+        {d: right, w: 1.15 * agree(right) * spinOk(1)},
+        {d: back,  w: .05  * agree(back)}
+      ];
+
+      let total = 0;
+      for (const o of opts) total += o.w;
+      let r = rnd() * total, chosen = opts[0];
+      for (const o of opts){ r -= o.w; if (r <= 0){ chosen = o; break; } }
+
+      const straight = chosen.d.x === d.x && chosen.d.y === d.y;
+      if (straight){
+        s.spin *= .55;               // decay, so a long straight resets the circle guard
+      } else {
+        // +1 for one rotational direction, -1 for the other.
+        s.spin += (d.x * chosen.d.y - d.y * chosen.d.x) > 0 ? 1 : -1;
+        s.nodes.push({x: s.head.x, y: s.head.y});
+        if (s.nodes.length > 13) s.nodes.shift();
+        s.dir = chosen.d;
+      }
+      s.run = CELL * (2 + ((rnd() * 5) | 0));
+    }
+
+    // Keep the body a fixed length by eating the tail as the head advances.
+    function trim(s){
+      const pts = s.nodes;
+      let total = 0;
+      for (let i = 0; i < pts.length - 1; i++) total += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y);
+      total += Math.hypot(s.head.x - pts[pts.length-1].x, s.head.y - pts[pts.length-1].y);
+
+      while (total > s.maxLen){
+        const a = pts[0], b = pts[1] || s.head;
+        const seg = Math.hypot(b.x - a.x, b.y - a.y);
+        const excess = total - s.maxLen;
+        if (excess >= seg && pts.length > 1){ pts.shift(); total -= seg; }
+        else {
+          const f = excess / (seg || 1);
+          a.x += (b.x - a.x) * f;
+          a.y += (b.y - a.y) * f;
+          break;
         }
-      });
+      }
     }
 
-    const at = (r, t) => {
-      const u = 1 - t, a = u*u*u, b = 3*u*u*t, c = 3*u*t*t, d = t*t*t;
-      return {
-        x: a*r.p0.x + b*r.c1.x + c*r.c2.x + d*r.p1.x,
-        y: a*r.p0.y + b*r.c1.y + c*r.c2.y + d*r.p1.y
-      };
-    };
+    function advance(s, dt){
+      let step = s.speed * dt;
+      // Walk cell by cell so a big dt can't skip past a decision point.
+      while (step > 0){
+        const chunk = Math.min(step, s.run - s.gone);
+        s.head.x += s.dir.x * chunk;
+        s.head.y += s.dir.y * chunk;
+        s.gone += chunk;
+        step -= chunk;
+        if (s.gone >= s.run - .0001){ s.gone = 0; turn(s); }
+      }
+      trim(s);
 
-    function draw(dt){
-      ctx.clearRect(0, 0, w, h);
+      // Respawn only once the whole body has left, so nothing pops mid-frame.
+      const m = s.maxLen + CELL * 2;
+      if (s.head.x < -m || s.head.x > w + m || s.head.y < -m || s.head.y > h + m){
+        Object.assign(s, spawn());
+      }
+    }
 
-      ctx.lineWidth = 1.4;
-      ctx.globalAlpha = 1;
-      routes.forEach(r=>{
-        ctx.strokeStyle = r.hue;
-        ctx.globalAlpha = .1;
+    function drawSnake(s){
+      const pts = s.nodes.concat([s.head]);
+      const M = pts.length;
+      if (M < 2) return;
+
+      // Corner radius per interior node, never more than half of either adjoining leg.
+      const rad = new Array(M).fill(0);
+      for (let i = 1; i < M - 1; i++){
+        const p = pts[i-1], c = pts[i], n = pts[i+1];
+        rad[i] = Math.min(CORNER,
+          Math.hypot(c.x - p.x, c.y - p.y) * .5,
+          Math.hypot(n.x - c.x, n.y - c.y) * .5);
+      }
+
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = s.hue;
+      ctx.lineWidth = s.width;
+
+      for (let i = 0; i < M - 1; i++){
+        const a = pts[i], b = pts[i+1];
+        const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy);
+        if (L < .01) continue;
+        const ux = dx / L, uy = dy / L;
+
+        // Alpha ramps toward the head, so the tail dissolves instead of ending abruptly.
+        ctx.globalAlpha = s.alpha * Math.pow((i + 1) / (M - 1), 1.7);
         ctx.beginPath();
-        ctx.moveTo(r.p0.x, r.p0.y);
-        ctx.bezierCurveTo(r.c1.x, r.c1.y, r.c2.x, r.c2.y, r.p1.x, r.p1.y);
+        ctx.moveTo(a.x + ux * rad[i], a.y + uy * rad[i]);
+        ctx.lineTo(b.x - ux * rad[i+1], b.y - uy * rad[i+1]);
+        // Round the corner at b by curving into the next leg.
+        if (i + 2 < M && rad[i+1] > 0){
+          const c = pts[i+1], n = pts[i+2];
+          const nx = n.x - c.x, ny = n.y - c.y, NL = Math.hypot(nx, ny);
+          if (NL > .01) ctx.quadraticCurveTo(c.x, c.y, c.x + (nx/NL) * rad[i+1], c.y + (ny/NL) * rad[i+1]);
+        }
         ctx.stroke();
-      });
+      }
 
-      movers.forEach(m=>{
-        m.t += m.v * dt;
-        if (m.t > 1) m.t -= 1;
-        const r = routes[m.r], pt = at(r, m.t);
-        // A short comet tail reads as motion even in a still screenshot.
-        const tail = at(r, Math.max(0, m.t - .035));
-        const g = ctx.createLinearGradient(tail.x, tail.y, pt.x, pt.y);
-        g.addColorStop(0, 'rgba(255,255,255,0)');
-        g.addColorStop(1, r.hue);
-        ctx.strokeStyle = g; ctx.globalAlpha = .4; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(tail.x, tail.y); ctx.lineTo(pt.x, pt.y); ctx.stroke();
+      // The head: a bright point with a soft bloom.
+      ctx.fillStyle = s.hue;
+      ctx.globalAlpha = Math.min(1, s.alpha + .44);
+      ctx.beginPath(); ctx.arc(s.head.x, s.head.y, s.width * 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = .13;
+      ctx.beginPath(); ctx.arc(s.head.x, s.head.y, s.width * 4.4, 0, Math.PI * 2); ctx.fill();
+    }
 
-        ctx.globalAlpha = .8; ctx.fillStyle = r.hue;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.9, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = .12;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, 6.5, 0, Math.PI * 2); ctx.fill();
-      });
+    function frame(dt){
+      ctx.clearRect(0, 0, w, h);
+      for (const s of snakes){ advance(s, dt); drawSnake(s); }
       ctx.globalAlpha = 1;
     }
 
-    let last = 0;
     function loop(ts){
       if (!running) return;
       const dt = last ? Math.min(48, ts - last) : 16;
       last = ts;
-      draw(dt);
+      frame(dt);
       raf = requestAnimationFrame(loop);
     }
     function start(){ if (running) return; running = true; last = 0; raf = requestAnimationFrame(loop); }
     function stop(){ running = false; cancelAnimationFrame(raf); }
 
     build();
-    if (REDUCED){ draw(0); }
+    if (REDUCED){ frame(0); }
     else {
       start();
       document.addEventListener('visibilitychange', ()=> document.hidden ? stop() : start());
@@ -943,7 +991,7 @@
     let rt;
     window.addEventListener('resize', ()=>{
       clearTimeout(rt);
-      rt = setTimeout(()=>{ build(); if (REDUCED) draw(0); }, 180);
+      rt = setTimeout(()=>{ build(); if (REDUCED) frame(0); }, 180);
     });
   })();
 
