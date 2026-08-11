@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Route Radar — Live SEPTA Transit Tracking for iPhone</title>
-<meta name="description" content="Track SEPTA buses, trolleys, and regional rail live on a beautiful map. Real-time arrivals, pinned stops, service alerts, SEPTA Key, and Indego bike-share — all in one app." />
+<meta name="description" content="Track SEPTA buses, trolleys, and regional rail live on a beautiful map. Real-time arrivals, Home Screen widgets, Live Activities, service alerts, SEPTA Key, and Indego bike-share — all in one app." />
 <meta name="theme-color" content="#05070e" />
 <link rel="canonical" href="https://routeradar.app/" />
 
@@ -95,7 +95,11 @@
      A canvas of snaking transit lines cutting their own paths across an invisible city
      grid. It says "real time" without a word of copy, and it's the one thing here you
      can't get from a template. Static single frame under prefers-reduced-motion. */
-  .bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden;
+  /* Height is pinned to the LARGE viewport (lvh), not inset:0 — on mobile, collapsing
+     the URL bar mid-scroll changes the visual viewport, and a bottom-anchored fixed
+     element would resize with it, stretching the canvas bitmap and re-firing layout.
+     100vh is the fallback for engines without lvh (where it measures the same thing). */
+  .bg-fx{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:-1;overflow:hidden;
     background:
       radial-gradient(1200px 760px at 76% -14%,rgba(46,144,255,.15),transparent 62%),
       radial-gradient(900px 620px at 6% 2%,rgba(58,220,239,.055),transparent 58%),
@@ -326,6 +330,9 @@
     .hero-cta,.modes,.eyebrow{justify-content:center}
     .modes{justify-content:center}
     .features{grid-template-columns:1fr 1fr}
+    /* Odd card count in a 2-col grid strands the last card in a half-empty row;
+       letting it span the row keeps the section bottom flush. */
+    .features .card:last-child:nth-child(odd){grid-column:1/-1}
     .sec-head{margin-bottom:44px}
     section.block{padding:76px 0}
     .nav-links .tlink{display:none}
@@ -416,7 +423,7 @@
     <div class="hero-copy reveal">
       <span class="eyebrow mono"><span class="pulse"></span>Live · Philadelphia</span>
       <h1>All of Philly transit, <span class="accent-text">moving in real time.</span></h1>
-      <p class="lead">Buses, trolleys, subways, regional rail and PATCO on one fast native map — with live arrivals, service alerts, saved stops, and more.</p>
+      <p class="lead">Buses, trolleys, subways, regional rail and PATCO on one fast native map — with live arrivals, widgets, Live Activities, service alerts, and more.</p>
       <div class="hero-cta">
         <a class="badge" href="#" data-appstore aria-label="Download Route Radar on the App Store"><img src="assets/app-store-badge.svg" alt="Download on the App Store" /></a>
         <a class="btn mono" href="#features">See more
@@ -472,7 +479,7 @@
         <span class="cnr tl"></span><span class="cnr br"></span>
         <div class="ico" style="background:rgba(46,144,255,.14);color:var(--mfl)"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9M4 16h16M4 16l-1 3M20 16l1 3M8 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg></div>
         <h3>Live vehicle map</h3>
-        <p>Watch active buses, trolley's, subway's and regional rail train's move in real time on a smooth, high-performance map.</p>
+        <p>Watch active buses, trolleys, subways and regional rail trains move in real time on a smooth, high-performance map.</p>
       </div>
       <div class="card reveal">
         <span class="cnr tl"></span><span class="cnr br"></span>
@@ -503,6 +510,24 @@
         <div class="ico" style="background:rgba(162,211,65,.14);color:var(--indego)"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="17" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="17" r="3" stroke="currentColor" stroke-width="2"/><path d="M6 17l4-8h5l3 8M9 9h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>Indego bikes &amp; lanes</h3>
         <p>Nearby Indego docks with live bike and dock availability, plus the city's bike-lane network mapped alongside transit.</p>
+      </div>
+      <div class="card reveal">
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(52,199,106,.14);color:var(--trolley)"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><rect x="13" y="4" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><rect x="4" y="13" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><rect x="13" y="13" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/></svg></div>
+        <h3>Home Screen widgets</h3>
+        <p>Live arrivals for your saved stops, right on your Home Screen — glance and go without opening the app.</p>
+      </div>
+      <div class="card reveal">
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(58,220,239,.14);color:var(--cy)"><svg viewBox="0 0 24 24" fill="none"><rect x="6.5" y="2.5" width="11" height="19" rx="3" stroke="currentColor" stroke-width="2"/><rect x="10" y="4.8" width="4" height="1.9" rx=".95" fill="currentColor"/><path d="M9.5 17.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h3>Live Activities</h3>
+        <p>Follow your trip from the Lock Screen and Dynamic Island — live position and arrival countdown until you step off.</p>
+      </div>
+      <div class="card reveal">
+        <span class="cnr tl"></span><span class="cnr br"></span>
+        <div class="ico" style="background:rgba(127,187,208,.14);color:var(--rail)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h3>Share anything</h3>
+        <p>Send a stop, a route, or a live vehicle to a friend — the link opens straight to it in the app.</p>
       </div>
     </div>
   </div>
@@ -577,7 +602,7 @@
             <h3>Follow your ride, stop by stop</h3>
             <p>Pick a vehicle and watch its whole trip unfold — where it is now, which stops are behind it, and when it reaches yours.</p>
             <div class="plist">
-              <span class="mono">Stop timeline</span><span class="mono">Live position</span><span class="mono">Route context</span>
+              <span class="mono">Stop timeline</span><span class="mono">Live position</span><span class="mono">Live Activity</span>
             </div>
           </div>
         </article>
@@ -806,12 +831,15 @@
       };
     }
 
-    function build(){
+    function sizeCanvas(){
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       w = cvs.clientWidth; h = cvs.clientHeight;
       cvs.width = Math.round(w * dpr); cvs.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
 
+    function build(){
+      sizeCanvas();
       const n = w < 700 ? 8 : 13;
       snakes = [];
       for (let i = 0; i < n; i++){
@@ -988,10 +1016,20 @@
       document.addEventListener('visibilitychange', ()=> document.hidden ? stop() : start());
     }
 
+    /* Mobile browsers fire resize when the URL bar collapses on the first scroll, even
+       though the lvh-pinned field hasn't changed size. Reseeding the snakes there is
+       what made the whole background visibly jump. So: bail out when the field's box is
+       unchanged, keep the existing snakes when only the height moved (split view,
+       keyboard), and rebuild from scratch only when the width changed — snake count and
+       spawn layout depend on width alone. */
     let rt;
     window.addEventListener('resize', ()=>{
       clearTimeout(rt);
-      rt = setTimeout(()=>{ build(); if (REDUCED) frame(0); }, 180);
+      rt = setTimeout(()=>{
+        if (cvs.clientWidth === w && cvs.clientHeight === h) return;
+        if (cvs.clientWidth === w) sizeCanvas(); else build();
+        if (REDUCED) frame(0);
+      }, 180);
     });
   })();
 
